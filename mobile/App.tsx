@@ -10,6 +10,7 @@ import {
   Bell, User, Home, Package, QrCode, Printer, PackagePlus, ChevronRight, Activity, Hexagon, AlertCircle
 } from 'lucide-react-native';
 import Svg, { Path } from 'react-native-svg';
+import QRCode from 'react-native-qrcode-svg';
 
 const BRAND_FONT = Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' });
 const SANS_FONT = Platform.select({ ios: 'System', android: 'sans-serif', default: 'sans-serif' });
@@ -430,18 +431,19 @@ export default function App() {
       {containers.length === 0 ? (
         <Text style={{color: '#666', marginTop: 20}}>No QR containers generated yet. Processors create these when packaging.</Text>
       ) : (
-        containers.map(c => (
-          <View key={c.id} style={[styles.actionCard, {height: 'auto', paddingVertical: 16, marginBottom: 12}]}>
-            <View style={styles.actionIconWrapperDark}>
-              <QrCode size={24} color="#FFFFFF" strokeWidth={2} />
-            </View>
-            <View style={styles.actionTextWrapper}>
+        containers.map(c => {
+          const qrUrl = `https://sih-2026-kiit.vercel.app/verify/${c.batchId}/${c.id}`;
+          return (
+            <View key={c.id} style={[styles.actionCard, {height: 'auto', paddingVertical: 16, marginBottom: 16, flexDirection: 'column', alignItems: 'center'}]}>
+              <View style={{ backgroundColor: '#fff', padding: 12, borderRadius: 12, marginBottom: 12 }}>
+                <QRCode value={qrUrl} size={150} />
+              </View>
               <Text style={styles.actionTitle}>Size: {c.containerSize}kg</Text>
               <Text style={styles.actionDesc}>Batch: {c.batchId.substring(0,6).toUpperCase()}</Text>
-              <Text style={[styles.actionDesc, {fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', marginTop: 4, fontSize: 10}]}>{c.qrData}</Text>
+              <Text style={[styles.actionDesc, {fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', marginTop: 8, fontSize: 10, textAlign: 'center'}]}>{c.qrData}</Text>
             </View>
-          </View>
-        ))
+          );
+        })
       )}
     </View>
   );
