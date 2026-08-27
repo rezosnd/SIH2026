@@ -41,21 +41,45 @@ export class AuthController {
   // ONLY FOR DEVELOPMENT / SIH DEMO Purposes
   @Get('dev-login')
   async devLogin(@Req() req: any) {
-    const role = req.query.role || 'BEEKEEPER';
+    const role = (req.query.role || 'BEEKEEPER').toUpperCase();
+    const nameMap: Record<string, string> = {
+      BEEKEEPER: 'Demo Beekeeper',
+      ADMIN: 'Demo Admin',
+      KVIC: 'Demo KVIC Officer',
+      PROCESSOR: 'Demo Processor',
+    };
+    const displayName = nameMap[role] || `Demo ${role}`;
     const email = `demo_${role.toLowerCase()}@honeychain.com`;
+
+    // findOrCreate the user with correct role
     const user = await this.authService['usersService'].findOrCreateGoogleUser(
       email,
-      'Demo',
-      role
+      displayName,
+      role,
     );
-    // Force role update if different (since findOrCreateGoogleUser creates BEEKEEPER by default)
+
+    // Force role update if it changed in DB
     if (user.role !== role) {
       await this.authService['usersService']['prisma'].user.update({
         where: { id: user.id },
-        data: { role: role }
+        data: { role },
       });
       user.role = role;
     }
+
+    // Ensure BeekeeperProfile exists for BEEKEEPER demo user
+    if (role === 'BEEKEEPER') {
+      const existing = await this.authService['usersService']['prisma'].beekeeperProfile.findUnique({
+        where: { userId: user.id },
+      });
+      if (!existing) {
+        await this.authService['usersService']['prisma'].beekeeperProfile.create({
+          data: { userId: user.id, name: displayName, farmLocation: 'Sundarbans Apiary' },
+        });
+      }
+    }
+
     return this.authService.generateJwtForGoogleUser(user);
   }
+
 }

@@ -18,10 +18,11 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     const { name, emails, photos } = profile;
     
     // Actually find or create the user in the database
+    const displayName = `${name?.givenName || 'Google'} ${name?.familyName || 'User'}`;
     const dbUser = await this.usersService.findOrCreateGoogleUser(
       emails[0].value,
-      name?.givenName || 'Google',
-      name?.familyName || 'User'
+      displayName,
+      'BEEKEEPER', // Default role for Google OAuth sign-in
     );
 
     const user = {

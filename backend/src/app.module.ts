@@ -12,6 +12,8 @@ import { QrModule } from './qr/qr.module';
 import { BlockchainModule } from './blockchain/blockchain.module';
 import { AdminModule } from './admin/admin.module';
 import { BeekeepersModule } from './beekeepers/beekeepers.module';
+import { ProcessorModule } from './processor/processor.module';
+import { KvicModule } from './kvic/kvic.module';
 
 @Module({
   imports: [
@@ -19,7 +21,7 @@ import { BeekeepersModule } from './beekeepers/beekeepers.module';
       ttl: 60000,
       limit: 100, // 100 requests per minute by default
     }]),
-    PrismaModule, AuthModule, UsersModule, HivesModule, BatchesModule, QrModule, BlockchainModule, AdminModule, BeekeepersModule
+    PrismaModule, AuthModule, UsersModule, HivesModule, BatchesModule, QrModule, BlockchainModule, AdminModule, BeekeepersModule, ProcessorModule, KvicModule
   ],
   controllers: [AppController],
   providers: [

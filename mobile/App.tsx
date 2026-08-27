@@ -1,7 +1,8 @@
 import { StatusBar } from 'expo-status-bar';
 import { 
   StyleSheet, Text, View, TouchableOpacity, 
-  ScrollView, ActivityIndicator, useWindowDimensions, Platform, Image 
+  ScrollView, ActivityIndicator, useWindowDimensions, Platform, Image,
+  Alert, TextInput
 } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
@@ -151,8 +152,8 @@ export default function App() {
     </TouchableOpacity>
   );
 
-  const ActionCard = ({ title, desc, IconComponent }: { title: string, desc: string, IconComponent: any }) => (
-    <TouchableOpacity style={styles.actionCard} activeOpacity={0.7}>
+  const ActionCard = ({ title, desc, IconComponent, onPress }: { title: string, desc: string, IconComponent: any, onPress?: () => void }) => (
+    <TouchableOpacity style={styles.actionCard} activeOpacity={0.7} onPress={onPress}>
       <View style={styles.actionIconWrapperDark}>
         <IconComponent size={24} color="#FFFFFF" strokeWidth={2} />
       </View>
@@ -188,9 +189,9 @@ export default function App() {
       <Text style={styles.sectionTitle}>QUICK ACTIONS</Text>
 
       <View style={styles.actionsGrid}>
-        <ActionCard title="Create Honey Batch" desc="Record a new harvest" IconComponent={PackagePlus} />
-        <ActionCard title="Manage Hives" desc="Register or update hive status" IconComponent={BeehiveIcon} />
-        <ActionCard title="Print QR Labels" desc="Generate labels for packaging" IconComponent={Printer} />
+        <ActionCard title="Create Honey Batch" desc="Record a new harvest" IconComponent={PackagePlus} onPress={() => setActiveTab('CreateBatch')} />
+        <ActionCard title="Manage Hives" desc="Register or update hive status" IconComponent={BeehiveIcon} onPress={() => setActiveTab('Hives')} />
+        <ActionCard title="View QR Codes" desc="See containers and QR labels" IconComponent={QrCode} onPress={() => setActiveTab('Containers')} />
       </View>
     </View>
   );
@@ -198,6 +199,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [hives, setHives] = useState<any[]>([]);
   const [batches, setBatches] = useState<any[]>([]);
+  const [containers, setContainers] = useState<any[]>([]);
 
   // Form states
   const [hiveLocation, setHiveLocation] = useState('');
@@ -230,10 +232,38 @@ export default function App() {
     }
   };
 
+  const fetchContainers = async () => {
+    if (!token) return;
+    try {
+      const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'https://sih-2026-kiit.vercel.app';
+      // Fetch all batches with their containers
+      const res = await fetch(`${apiUrl}/batches`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const batchList = await res.json();
+        // Flatten containers from all batches
+        const allContainers: any[] = [];
+        for (const batch of batchList) {
+          if (batch.containers && batch.containers.length > 0) {
+            batch.containers.forEach((c: any) => {
+              allContainers.push({ ...c, batchId: batch.id });
+            });
+          }
+        }
+        setContainers(allContainers);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'Hives' || activeTab === 'CreateBatch') fetchHives();
     if (activeTab === 'Batches') fetchBatches();
+    if (activeTab === 'Containers') fetchContainers();
   }, [activeTab, token]);
+
 
   const handleCreateHive = async () => {
     if (!hiveLocation) {
@@ -404,6 +434,28 @@ export default function App() {
     </View>
   );
 
+  const ContainersContent = () => (
+    <View style={styles.contentArea}>
+      <Text style={styles.sectionTitle}>MY QR CODES & CONTAINERS</Text>
+      {containers.length === 0 ? (
+        <Text style={{color: '#666', marginTop: 20}}>No QR containers generated yet. Processors create these when packaging.</Text>
+      ) : (
+        containers.map(c => (
+          <View key={c.id} style={[styles.actionCard, {height: 'auto', paddingVertical: 16, marginBottom: 12}]}>
+            <View style={styles.actionIconWrapperDark}>
+              <QrCode size={24} color="#FFFFFF" strokeWidth={2} />
+            </View>
+            <View style={styles.actionTextWrapper}>
+              <Text style={styles.actionTitle}>Size: {c.containerSize}kg</Text>
+              <Text style={styles.actionDesc}>Batch: {c.batchId.substring(0,6).toUpperCase()}</Text>
+              <Text style={[styles.actionDesc, {fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', marginTop: 4, fontSize: 10}]}>{c.qrData}</Text>
+            </View>
+          </View>
+        ))
+      )}
+    </View>
+  );
+
   const MobileBottomNav = () => (
     <View style={styles.bottomNav}>
       <TouchableOpacity style={activeTab === 'Dashboard' ? styles.navItemActive : styles.navItem} onPress={() => setActiveTab('Dashboard')}>
@@ -478,7 +530,10 @@ export default function App() {
               <ScrollView style={styles.scrollArea} contentContainerStyle={styles.desktopScrollInner}>
                 {activeTab === 'Dashboard' && <DashboardContent />}
                 {activeTab === 'Hives' && <HivesContent />}
+                {activeTab === 'CreateHive' && <CreateHiveContent />}
                 {activeTab === 'Batches' && <BatchesContent />}
+                {activeTab === 'CreateBatch' && <CreateBatchContent />}
+                {activeTab === 'Containers' && <ContainersContent />}
               </ScrollView>
             </View>
           </View>
@@ -489,7 +544,10 @@ export default function App() {
               <View style={styles.mobileContentWrapper}>
                 {activeTab === 'Dashboard' && <DashboardContent />}
                 {activeTab === 'Hives' && <HivesContent />}
+                {activeTab === 'CreateHive' && <CreateHiveContent />}
                 {activeTab === 'Batches' && <BatchesContent />}
+                {activeTab === 'CreateBatch' && <CreateBatchContent />}
+                {activeTab === 'Containers' && <ContainersContent />}
               </View>
             </ScrollView>
             <MobileBottomNav />
@@ -888,5 +946,83 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#FFFFFF',
     marginTop: 4,
-  }
+  },
+  // Form styles
+  formContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
+    marginTop: 12,
+  },
+  inputLabel: {
+    fontFamily: SANS_FONT,
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#999999',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: 8,
+    marginTop: 8,
+  },
+  textInput: {
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+    fontFamily: SANS_FONT,
+    color: '#111',
+    backgroundColor: '#FAFAFA',
+    marginBottom: 16,
+  },
+  primaryButton: {
+    backgroundColor: '#111111',
+    borderRadius: 12,
+    paddingVertical: 15,
+    alignItems: 'center',
+    marginTop: 8,
+    marginBottom: 12,
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontFamily: SANS_FONT,
+    fontSize: 15,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  secondaryButton: {
+    backgroundColor: '#F5F5F5',
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  secondaryButtonText: {
+    color: '#555555',
+    fontFamily: SANS_FONT,
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  hiveSelectItem: {
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 8,
+    backgroundColor: '#FAFAFA',
+  },
+  hiveSelectItemSelected: {
+    backgroundColor: '#111111',
+    borderColor: '#111111',
+  },
+  hiveSelectText: {
+    fontFamily: SANS_FONT,
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+  },
 });

@@ -35,10 +35,10 @@ export class UsersService {
     return this.prisma.user.delete({ where: { id } });
   }
 
-  async findOrCreateGoogleUser(email: string, firstName: string, lastName: string) {
+  async findOrCreateGoogleUser(email: string, firstName: string, role: string = 'BEEKEEPER') {
     let user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) {
-      // For Google users, we generate a random complex password 
+      // For Google users, we generate a random complex password
       // since they won't login via email/password directly right now
       const randomPassword = (Math.random() + 1).toString(36).substring(2) + (Math.random() + 1).toString(36).substring(2);
       const hashedPassword = await bcrypt.hash(randomPassword, 10);
@@ -46,17 +46,19 @@ export class UsersService {
         data: {
           email,
           password: hashedPassword,
-          role: 'BEEKEEPER', // default role
+          role: role as any,
         },
       });
-      // Optionally create BeekeeperProfile if we assume they are a beekeeper
-      await this.prisma.beekeeperProfile.create({
-        data: {
-          userId: user.id,
-          name: `${firstName} ${lastName}`,
-          farmLocation: 'Unknown',
-        }
-      });
+      // Only create BeekeeperProfile for BEEKEEPER role
+      if (role === 'BEEKEEPER') {
+        await this.prisma.beekeeperProfile.create({
+          data: {
+            userId: user.id,
+            name: firstName || email.split('@')[0],
+            farmLocation: 'Unknown',
+          }
+        });
+      }
     }
     return user;
   }

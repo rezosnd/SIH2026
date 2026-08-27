@@ -29,13 +29,20 @@ export class QrService {
       throw new NotFoundException('Invalid QR Code');
     }
 
+    // Check if QR has been revoked
+    if ((container as any).revokedAt) {
+      return { status: 'REVOKED', message: 'This QR code has been revoked by the administrator.' };
+    }
+
     let isSuspicious = false;
     let riskReason = '';
+    let previousCity: string | undefined;
+    let timeDiffMinutes: number | undefined;
 
     const recentScans = container.scans;
     const now = new Date();
 
-    // Rule 1: Scan Frequency (e.g., > 5 scans in 5 minutes)
+    // Rule 1: Scan Frequency (> 5 scans in 5 minutes)
     const fiveMinutesAgo = new Date(now.getTime() - 5 * 60000);
     const scansInLast5Mins = recentScans.filter((s) => s.timestamp > fiveMinutesAgo);
     
@@ -44,7 +51,7 @@ export class QrService {
       riskReason = 'Excessive scans in short time period.';
     }
 
-    // Rule 2: Unrealistic Geographic Movement (e.g. different city within 2 hours)
+    // Rule 2: Unrealistic Geographic Movement (different city within 2 hours)
     if (!isSuspicious && recentScans.length > 0) {
       const lastScan = recentScans[0];
       const twoHoursAgo = new Date(now.getTime() - 2 * 3600000);
@@ -52,7 +59,9 @@ export class QrService {
       if (lastScan.timestamp > twoHoursAgo) {
         if (locationData.city && lastScan.city && locationData.city !== lastScan.city) {
           isSuspicious = true;
-          riskReason = `Unrealistic geographic movement from ${lastScan.city} to ${locationData.city}.`;
+          previousCity = lastScan.city;
+          timeDiffMinutes = Math.round((now.getTime() - lastScan.timestamp.getTime()) / 60000);
+          riskReason = `Unrealistic geographic movement from ${lastScan.city} to ${locationData.city} in ${timeDiffMinutes} minutes.`;
         }
       }
     }
@@ -70,31 +79,48 @@ export class QrService {
       },
     });
 
-    // If suspicious, create alerts
+    // If suspicious, create SecurityAlert + notifications
     if (isSuspicious) {
+      // Create SecurityAlert record
+      await (this.prisma as any).securityAlert.create({
+        data: {
+          containerId: container.id,
+          scanId: scan.id,
+          previousCity: previousCity,
+          currentCity: locationData.city,
+          timeDiffMinutes: timeDiffMinutes,
+          riskLevel: 'HIGH',
+          reason: riskReason,
+          status: 'OPEN',
+        },
+      });
+
       // Create admin notification
       await this.prisma.notification.create({
         data: {
           type: 'QR_SUSPICIOUS_LOCATION',
           title: 'Suspicious QR Activity Detected',
-          message: `QR ${qrData} (Batch ${container.batchId}) flagged: ${riskReason}`,
+          message: `QR flagged on Batch ${container.batchId}: ${riskReason}`,
         },
       });
 
       // Log to Audit Log
       await this.prisma.auditLog.create({
         data: {
-          action: 'QR_SCANNED',
-          resource: qrData,
-          metadata: JSON.stringify({ riskLevel: 'HIGH', reason: riskReason }),
+          action: 'QR_SUSPICIOUS_SCAN',
+          resource: container.id,
+          metadata: JSON.stringify({ riskLevel: 'HIGH', reason: riskReason, city: locationData.city }),
         },
       });
     }
 
     return {
       status: isSuspicious ? 'SUSPICIOUS' : 'VERIFIED',
+      riskLevel: isSuspicious ? 'HIGH' : 'NONE',
+      riskReason: isSuspicious ? riskReason : undefined,
       scan,
       container: {
+        id: container.id,
         batchId: container.batchId,
         size: container.containerSize,
       }

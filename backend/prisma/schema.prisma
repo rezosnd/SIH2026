@@ -21,24 +21,36 @@ enum HiveStatus {
 
 enum BatchStatus {
   HARVESTED
+  ASSIGNED
+  ACCEPTED
   PROCESSING
+  PROCESSING_COMPLETED
+  QUALITY_CHECKED
   PACKAGED
   DISTRIBUTED
 }
 
+enum AlertStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+  FALSE_POSITIVE
+}
+
 model User {
-  id             String    @id @default(uuid())
-  email          String    @unique
-  password       String
-  role           Role      @default(BEEKEEPER)
-  clusterId      String?
-  cluster        Cluster?  @relation(fields: [clusterId], references: [id])
+  id               String             @id @default(uuid())
+  email            String             @unique
+  password         String
+  role             Role               @default(BEEKEEPER)
+  clusterId        String?
+  cluster          Cluster?           @relation(fields: [clusterId], references: [id])
   beekeeperProfile BeekeeperProfile?
-  events         SupplyChainEvent[]
-  notifications  Notification[]
-  auditLogs      AuditLog[]
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  processorProfile ProcessorProfile?
+  events           SupplyChainEvent[]
+  notifications    Notification[]
+  auditLogs        AuditLog[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
 }
 
 model Cluster {
@@ -73,31 +85,45 @@ model Hive {
 }
 
 model HoneyBatch {
-  id            String             @id @default(uuid())
-  beekeeperId   String
-  beekeeper     BeekeeperProfile   @relation(fields: [beekeeperId], references: [id])
-  hiveId        String
-  hive          Hive               @relation(fields: [hiveId], references: [id])
-  status        BatchStatus        @default(HARVESTED)
-  harvestDate   DateTime           @default(now())
-  quantity      Float              // in kg or liters
-  ipfsHash      String?
-  txHash        String?
-  qrData        String?            @unique
-  containers    BatchContainer[]
-  events        SupplyChainEvent[]
-  qualityRecords QualityRecord[]
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
+  id              String             @id @default(uuid())
+  beekeeperId     String
+  beekeeper       BeekeeperProfile   @relation(fields: [beekeeperId], references: [id])
+  hiveId          String
+  hive            Hive               @relation(fields: [hiveId], references: [id])
+  processorId     String?
+  processor       ProcessorProfile?  @relation(fields: [processorId], references: [id])
+  status          BatchStatus        @default(HARVESTED)
+  harvestDate     DateTime           @default(now())
+  quantity        Float              // in kg or liters
+  ipfsHash        String?
+  txHash          String?
+  qrData          String?            @unique
+  revokedAt       DateTime?
+  containers      BatchContainer[]
+  events          SupplyChainEvent[]
+  qualityRecords  QualityRecord[]
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+}
+
+model ProcessorProfile {
+  id       String       @id @default(uuid())
+  userId   String       @unique
+  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name     String
+  facility String?
+  batches  HoneyBatch[]
 }
 
 model BatchContainer {
-  id            String        @id @default(uuid())
-  batchId       String
-  batch         HoneyBatch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
-  qrData        String        @unique // unique package identifier
-  containerSize Float         // e.g., 0.5 kg, 1 kg
-  scans         QRScan[]
+  id             String          @id @default(uuid())
+  batchId        String
+  batch          HoneyBatch      @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  qrData         String          @unique // unique package identifier
+  containerSize  Float           // e.g., 0.5 kg, 1 kg
+  revokedAt      DateTime?
+  scans          QRScan[]
+  securityAlerts SecurityAlert[]
 }
 
 model SupplyChainEvent {
@@ -164,4 +190,23 @@ model AuditLog {
   resource  String?  // The ID of the affected resource
   metadata  String?  // JSON stringified additional data
   timestamp DateTime @default(now())
+}
+
+model SecurityAlert {
+  id                String      @id @default(uuid())
+  containerId       String
+  container         BatchContainer @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  scanId            String?
+  previousCity      String?
+  currentCity       String?
+  timeDiffMinutes   Int?
+  distanceKm        Float?
+  riskLevel         String      @default("HIGH") // LOW, MEDIUM, HIGH
+  reason            String
+  status            AlertStatus @default(OPEN)
+  resolvedById      String?
+  resolvedAt        DateTime?
+  investigationNotes String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
 }

@@ -73,7 +73,17 @@ export default function Home() {
             </button>
           </div>
         </div>
-        
+
+        {/* Portal Links */}
+        <div className="px-6 py-4 border-t border-gray-100">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center mb-3">Role-Based Portals</p>
+          <div className="flex gap-2 justify-center flex-wrap">
+            <a href="/admin" className="text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-200 px-4 py-1.5 rounded-full transition-colors">Admin</a>
+            <a href="/kvic/dashboard" className="text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-200 px-4 py-1.5 rounded-full transition-colors">KVIC</a>
+            <a href="/processor" className="text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-200 px-4 py-1.5 rounded-full transition-colors">Processor</a>
+          </div>
+        </div>
+
         {/* Footer */}
         <div className="bg-gray-50 p-4 text-center border-t border-gray-100 flex-shrink-0">
            <p className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center justify-center">
