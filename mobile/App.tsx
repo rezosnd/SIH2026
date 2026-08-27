@@ -128,6 +128,8 @@ export default function App() {
     </View>
   );
 
+
+
   const HoneycombBackground = () => (
     <View style={styles.honeycombWrapper}>
       <Hexagon size={60} color="rgba(255,255,255,0.02)" style={{ position: 'absolute', top: 0, left: 40 }} strokeWidth={1} />
@@ -140,23 +142,28 @@ export default function App() {
     </View>
   );
 
-  const MobileHero = () => (
-    <View style={styles.heroSection}>
-      <HoneycombBackground />
-      <Image source={require('./assets/beehouse.png')} style={styles.heroImage} resizeMode="contain" />
+  const MobileHero = () => {
+    const isDashboard = activeTab === 'Dashboard';
+    return (
+    <View style={[styles.heroSection, !isDashboard && { backgroundColor: '#ffffff', paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' }]}>
+      {isDashboard && <HoneycombBackground />}
+      {isDashboard && <Image source={require('./assets/beehouse.png')} style={styles.heroImage} resizeMode="contain" />}
       <View style={styles.heroTop}>
         <TouchableOpacity style={styles.iconButton}>
-          <Activity size={24} color="#fff" strokeWidth={2} />
+          <Activity size={24} color={isDashboard ? "#fff" : "#111"} strokeWidth={2} />
         </TouchableOpacity>
-        <BrandHeader />
-        <TopControls />
+        <BrandHeader color={isDashboard ? "#fff" : "#111"} />
+        <TopControls isDark={!isDashboard} />
       </View>
-      <View style={styles.heroWelcome}>
-        <Text style={styles.welcomeText}>{t('welcome')}</Text>
-        <Text style={styles.welcomeName}>{loading ? '...' : (data?.name || 'Beekeeper')}</Text>
-      </View>
+      {isDashboard && (
+        <View style={styles.heroWelcome}>
+          <Text style={styles.welcomeText}>{t('welcome')}</Text>
+          <Text style={styles.welcomeName}>{loading ? '...' : (data?.name || 'Beekeeper')}</Text>
+        </View>
+      )}
     </View>
-  );
+    );
+  };
 
   const StatCard = ({ title, value, unit, IconComponent, alert, onPress }: { title: string, value: any, unit?: string, IconComponent: any, alert?: boolean, onPress?: () => void }) => (
     <TouchableOpacity style={[styles.statCard, isLargeScreen && styles.statCardDesktop]} activeOpacity={0.7} onPress={onPress}>
@@ -384,7 +391,7 @@ export default function App() {
         <Text style={styles.inputLabel}>Hive Location</Text>
         <TextInput 
           style={styles.textInput} 
-          placeholder="e.g. North Apiary, Sector 4"
+          placeholder="Enter APIARY location..."
           value={hiveLocation}
           onChangeText={setHiveLocation}
         />
@@ -428,8 +435,16 @@ export default function App() {
           <Text style={{fontSize: 12, color: '#666', marginBottom: 2}}>Last updated: {hiveDetails.current?.timestamp ? new Date(hiveDetails.current.timestamp).toLocaleString() : 'Never'}</Text>
         </View>
 
-        <Text style={styles.sectionTitle}>CURRENT CONDITIONS</Text>
-        <View style={{flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between'}}>
+        {!hiveDetails.current ? (
+          <View style={{backgroundColor: '#FFF5F5', padding: 20, borderRadius: 12, borderWidth: 1, borderColor: '#FEE2E2', marginBottom: 24, alignItems: 'center'}}>
+            <AlertTriangle color="#EF4444" size={32} style={{marginBottom: 8}} />
+            <Text style={{fontSize: 16, fontWeight: 'black', color: '#EF4444', marginBottom: 4}}>NO SENSOR READINGS AVAILABLE</Text>
+            <Text style={{color: '#991B1B', textAlign: 'center'}}>Connect the hive device to begin monitoring.</Text>
+          </View>
+        ) : (
+          <>
+            <Text style={styles.sectionTitle}>CURRENT CONDITIONS</Text>
+            <View style={{flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between'}}>
           <View style={[styles.statCardDesktop, {width: '48%', marginBottom: 12}]}>
             <Text style={styles.statTitle}>Temperature</Text>
             <Text style={styles.statValue}>{hiveDetails.current?.temperature ? `${hiveDetails.current.temperature} °C` : 'N/A'}</Text>
@@ -456,7 +471,9 @@ export default function App() {
             <Text style={styles.statTitle}>UV</Text>
             <Text style={styles.statValue}>{hiveDetails.current?.uv ? hiveDetails.current.uv : 'N/A'}</Text>
           </View>
-        </View>
+            </View>
+          </>
+        )}
 
         <Text style={styles.sectionTitle}>ENVIRONMENT</Text>
         <View style={[styles.actionCard, { flexDirection: 'column', alignItems: 'flex-start', padding: 20 }]}>
@@ -707,13 +724,15 @@ export default function App() {
           <View style={styles.desktopLayout}>
             <DesktopSidebar />
             <View style={styles.desktopMain}>
-              <View style={styles.desktopHeader}>
-                <View>
-                  <Text style={styles.welcomeTextDark}>Welcome back,</Text>
-                  <Text style={styles.welcomeNameDark}>{loading ? '...' : (data?.name || 'Beekeeper')}</Text>
+              {activeTab === 'Dashboard' && (
+                <View style={styles.desktopHeader}>
+                  <View>
+                    <Text style={styles.welcomeTextDark}>Welcome back,</Text>
+                    <Text style={styles.welcomeNameDark}>{loading ? '...' : (data?.name || 'Beekeeper')}</Text>
+                  </View>
+                  <TopControls isDark={true} />
                 </View>
-                <TopControls isDark={true} />
-              </View>
+              )}
               <ScrollView style={styles.scrollArea} contentContainerStyle={styles.desktopScrollInner}>
                 {activeTab === 'Dashboard' && <DashboardContent />}
                 {activeTab === 'Hives' && <HivesContent />}

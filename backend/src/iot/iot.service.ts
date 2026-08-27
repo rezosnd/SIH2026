@@ -5,6 +5,14 @@ import { PrismaService } from '../prisma/prisma.service';
 export class IoTService {
   constructor(private readonly prisma: PrismaService) { }
 
+  async registerDevice(deviceId: string, hiveId: string) {
+    return this.prisma.ioTDevice.upsert({
+      where: { deviceId },
+      update: { hiveId },
+      create: { deviceId, hiveId, status: 'ONLINE', firmwareVersion: 'v1.0.0' }
+    });
+  }
+
   async ingestTelemetry(hiveId: string, payload: any) {
     const { deviceId, sensors, timestamp } = payload;
     if (!deviceId) throw new BadRequestException('deviceId required');
