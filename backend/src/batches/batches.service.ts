@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { BlockchainService } from '../blockchain/blockchain.service';
 import { Prisma } from '@prisma/client';
-import { v4 as uuidv4 } from 'uuid';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class BatchesService {
@@ -12,7 +12,7 @@ export class BatchesService {
   ) {}
 
   async create(data: Prisma.HoneyBatchUncheckedCreateInput) {
-    const qrData = uuidv4();
+    const qrData = crypto.randomUUID();
     const batch = await this.prisma.honeyBatch.create({
       data: { ...data, qrData },
       include: { hive: true }

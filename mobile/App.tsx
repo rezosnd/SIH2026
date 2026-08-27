@@ -1,10 +1,15 @@
 import { StatusBar } from 'expo-status-bar';
 import { 
   StyleSheet, Text, View, SafeAreaView, TouchableOpacity, 
-  ScrollView, ActivityIndicator, useWindowDimensions, Platform 
+  ScrollView, ActivityIndicator, useWindowDimensions, Platform, Image 
 } from 'react-native';
 import { useState, useEffect } from 'react';
-import { Feather } from '@expo/vector-icons';
+import { 
+  Bell, User, Home, Package, QrCode, Printer, PlusCircle, Hexagon, Database, ChevronRight, AlertCircle, Activity
+} from 'lucide-react-native';
+
+const BRAND_FONT = Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' });
+const SANS_FONT = Platform.select({ ios: 'System', android: 'sans-serif', default: 'sans-serif' });
 
 export default function App() {
   const [data, setData] = useState<any>(null);
@@ -13,7 +18,6 @@ export default function App() {
   
   const isDesktop = width >= 1024;
   const isTablet = width >= 768 && width < 1024;
-  const numColumns = isDesktop ? 4 : (isTablet ? 4 : 2);
   const isLargeScreen = isDesktop || isTablet;
 
   useEffect(() => {
@@ -33,161 +37,169 @@ export default function App() {
     fetchDashboard();
   }, []);
 
-  const BrandHeader = () => (
+  const BrandHeader = ({ color = '#fff' }: { color?: string }) => (
     <View style={styles.brandContainer}>
-      <Text style={styles.headerTitle}>HONEYCHAIN</Text>
-      <Text style={styles.headerSubtitle}>BEEKEEPER DASHBOARD</Text>
+      <Text style={[styles.headerTitle, { color }]}>HONEYCHAIN</Text>
     </View>
   );
 
-  const TopControls = () => (
+  const TopControls = ({ isDark = false }: { isDark?: boolean }) => (
     <View style={styles.topControls}>
       <TouchableOpacity style={styles.iconButton}>
-        <Feather name="bell" size={20} color={isLargeScreen ? "#000" : "#fff"} />
+        <Bell size={22} color={isDark ? "#111" : "#fff"} strokeWidth={2} />
         <View style={styles.notificationBadge} />
       </TouchableOpacity>
       <TouchableOpacity style={[styles.iconButton, { marginLeft: 16 }]}>
-        <Feather name="user" size={22} color={isLargeScreen ? "#000" : "#fff"} />
+        <User size={24} color={isDark ? "#111" : "#fff"} strokeWidth={2} />
       </TouchableOpacity>
     </View>
   );
 
   const MobileHero = () => (
-    <View style={styles.mobileHeroSection}>
-      <View style={styles.mobileHeroTop}>
+    <View style={styles.heroSection}>
+      {/* Real photographic grayscale beehive hero background */}
+      <Image 
+        source={{ uri: 'https://images.unsplash.com/photo-1587049352847-81a56d773c1c?q=80&w=800&auto=format&fit=crop&sat=-100' }} 
+        style={styles.heroImage}
+        resizeMode="cover"
+      />
+      <View style={styles.heroGradientOverlay} />
+      
+      <View style={styles.heroTop}>
         <TouchableOpacity style={styles.iconButton}>
-          <Feather name="menu" size={24} color="#fff" />
+          <Activity size={24} color="#fff" strokeWidth={2} />
         </TouchableOpacity>
         <BrandHeader />
         <TopControls />
       </View>
-      <View style={styles.welcomeSection}>
-        <Text style={styles.welcomeTitle}>Welcome back,</Text>
-        <Text style={styles.welcomeName}>{loading ? '...' : (data?.name || 'Beekeeper')}!</Text>
+      <View style={styles.heroWelcome}>
+        <Text style={styles.welcomeText}>Welcome back,</Text>
+        <Text style={styles.welcomeName}>{loading ? '...' : (data?.name || 'Beekeeper')}</Text>
         <Text style={styles.welcomeDesc}>Here's what's happening with your hives.</Text>
       </View>
-      <Feather name="hexagon" size={160} color="rgba(255,255,255,0.03)" style={styles.heroHexagon} />
     </View>
   );
 
-  const StatCard = ({ title, value, unit, icon, alert }: { title: string, value: any, unit?: string, icon: any, alert?: boolean }) => (
-    <TouchableOpacity style={[styles.statCard, isLargeScreen && styles.statCardDesktop]} activeOpacity={0.8}>
+  const StatCard = ({ title, value, unit, IconComponent, alert }: { title: string, value: any, unit?: string, IconComponent: any, alert?: boolean }) => (
+    <TouchableOpacity style={[styles.statCard, isLargeScreen && styles.statCardDesktop]} activeOpacity={0.7}>
       <View style={styles.statHeader}>
-        <View style={styles.statIconContainer}>
-          <Feather name={icon} size={20} color="#000" />
+        <View style={[styles.statIconWrapper, alert && { backgroundColor: '#FFF5F5' }]}>
+          <IconComponent size={24} color={alert ? "#E60000" : "#111111"} strokeWidth={2} />
         </View>
-        <Feather name="chevron-right" size={16} color="#ccc" />
+        <ChevronRight size={18} color="#CCCCCC" strokeWidth={2} />
       </View>
       <View style={styles.statBody}>
         {loading ? (
-          <View style={styles.skeletonNumber} />
+          <View style={styles.skeletonBlock} />
         ) : (
           <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
-            <Text style={[styles.statNumber, alert && value > 0 && { color: '#ff3b3b' }]}>
+            <Text style={[styles.statValue, alert && value > 0 && { color: '#E60000' }]}>
               {value ?? 0}
             </Text>
             {unit && <Text style={styles.statUnit}>{unit}</Text>}
           </View>
         )}
-        <Text style={styles.statLabel}>{title}</Text>
+        <Text style={styles.statTitle}>{title}</Text>
       </View>
     </TouchableOpacity>
   );
 
-  const ActionCard = ({ title, desc, icon }: { title: string, desc: string, icon: any }) => (
-    <TouchableOpacity style={styles.actionCard} activeOpacity={0.8}>
-      <View style={styles.actionIconWrapper}>
-        <Feather name={icon} size={22} color="#fff" />
+  const ActionCard = ({ title, desc, IconComponent }: { title: string, desc: string, IconComponent: any }) => (
+    <TouchableOpacity style={styles.actionCard} activeOpacity={0.7}>
+      <View style={styles.actionIconWrapperDark}>
+        <IconComponent size={24} color="#FFFFFF" strokeWidth={2} />
       </View>
       <View style={styles.actionTextWrapper}>
         <Text style={styles.actionTitle}>{title}</Text>
         <Text style={styles.actionDesc}>{desc}</Text>
       </View>
-      <Feather name="chevron-right" size={20} color="#ccc" />
+      <ChevronRight size={20} color="#CCCCCC" strokeWidth={2} />
     </TouchableOpacity>
   );
 
+  const HiveStatus = () => (
+    <View style={styles.statusContainer}>
+      <Text style={styles.statusSectionTitle}>HIVE STATUS</Text>
+      <View style={styles.statusCard}>
+        <View style={styles.statusDot} />
+        <Text style={styles.statusText}>All systems operational</Text>
+      </View>
+    </View>
+  );
+
   const DashboardContent = () => (
-    <View style={styles.mainContentArea}>
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>OVERVIEW</Text>
-        <View style={styles.sectionUnderline} />
-      </View>
-      
-      <View style={[styles.statsGrid, isLargeScreen && styles.statsGridDesktop]}>
-        <StatCard title="ACTIVE HIVES" value={data?.activeHives} icon="layers" />
-        <StatCard title="HARVESTED" value={data?.totalHarvested} unit="kg" icon="box" />
-        <StatCard title="ACTIVE BATCHES" value={data?.activeBatches} icon="package" />
-        <StatCard title="QR ALERTS" value={data?.alerts} alert={true} icon="alert-circle" />
+    <View style={styles.contentArea}>
+      <View style={styles.statsGrid}>
+        <StatCard title="ACTIVE HIVES" value={data?.activeHives} IconComponent={Hexagon} />
+        <StatCard title="HARVESTED" value={data?.totalHarvested} unit="kg" IconComponent={Database} />
+        <StatCard title="ACTIVE BATCHES" value={data?.activeBatches} IconComponent={Package} />
+        <StatCard title="QR ALERTS" value={data?.alerts} alert={true} IconComponent={QrCode} />
       </View>
 
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>QUICK ACTIONS</Text>
-        <View style={styles.sectionUnderline} />
-      </View>
+      <HiveStatus />
 
-      <View style={[styles.actionsGrid, isLargeScreen && styles.actionsGridDesktop]}>
-        <ActionCard title="Create Honey Batch" desc="Record a new harvest" icon="plus" />
-        <ActionCard title="Manage Hives" desc="Register or update hive status" icon="grid" />
-        <ActionCard title="Print QR Labels" desc="Generate labels for packaging" icon="printer" />
+      <Text style={styles.sectionTitle}>QUICK ACTIONS</Text>
+
+      <View style={styles.actionsGrid}>
+        <ActionCard title="Create Honey Batch" desc="Record a new harvest" IconComponent={PlusCircle} />
+        <ActionCard title="Manage Hives" desc="Register or update hive status" IconComponent={Hexagon} />
+        <ActionCard title="Print QR Labels" desc="Generate labels for packaging" IconComponent={Printer} />
       </View>
     </View>
   );
 
   const MobileBottomNav = () => (
     <View style={styles.bottomNav}>
-      <TouchableOpacity style={styles.navItemActive}>
-        <Feather name="home" size={20} color="#fff" />
+      <TouchableOpacity style={styles.navItem}>
+        <View style={styles.navActiveIndicator} />
+        <Home size={24} color="#111111" strokeWidth={2} />
         <Text style={styles.navTextActive}>Dashboard</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.navItem}>
-        <Feather name="layers" size={20} color="#666" />
+        <Hexagon size={24} color="#999999" strokeWidth={2} />
         <Text style={styles.navText}>Hives</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.navItem}>
-        <Feather name="package" size={20} color="#666" />
+        <Package size={24} color="#999999" strokeWidth={2} />
         <Text style={styles.navText}>Batches</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.navItem}>
-        <Feather name="alert-circle" size={20} color="#666" />
+        <AlertCircle size={24} color="#999999" strokeWidth={2} />
         <Text style={styles.navText}>Alerts</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.navItem}>
-        <Feather name="user" size={20} color="#666" />
+        <User size={24} color="#999999" strokeWidth={2} />
         <Text style={styles.navText}>Profile</Text>
       </TouchableOpacity>
     </View>
   );
 
   const DesktopSidebar = () => (
-    <View style={styles.desktopSidebar}>
-      <View style={styles.desktopBrand}>
-        <Text style={[styles.headerTitle, { color: '#000' }]}>HONEYCHAIN</Text>
-        <Text style={[styles.headerSubtitle, { color: '#666' }]}>BEEKEEPER DASHBOARD</Text>
+    <View style={styles.sidebar}>
+      <View style={styles.sidebarBrand}>
+        <BrandHeader color="#111" />
       </View>
-      
-      <View style={styles.desktopNav}>
-        <TouchableOpacity style={styles.desktopNavItemActive}>
-          <Feather name="home" size={20} color="#fff" />
-          <Text style={styles.desktopNavTextActive}>Dashboard</Text>
+      <View style={styles.sidebarNav}>
+        <TouchableOpacity style={styles.sidebarItemActive}>
+          <Home size={20} color="#111111" strokeWidth={2} />
+          <Text style={styles.sidebarTextActive}>Dashboard</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.desktopNavItem}>
-          <Feather name="layers" size={20} color="#666" />
-          <Text style={styles.desktopNavText}>Hives</Text>
+        <TouchableOpacity style={styles.sidebarItem}>
+          <Hexagon size={20} color="#6B6B6B" strokeWidth={2} />
+          <Text style={styles.sidebarText}>Hives</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.desktopNavItem}>
-          <Feather name="package" size={20} color="#666" />
-          <Text style={styles.desktopNavText}>Batches</Text>
+        <TouchableOpacity style={styles.sidebarItem}>
+          <Package size={20} color="#6B6B6B" strokeWidth={2} />
+          <Text style={styles.sidebarText}>Batches</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.desktopNavItem}>
-          <Feather name="alert-circle" size={20} color="#666" />
-          <Text style={styles.desktopNavText}>QR Alerts</Text>
+        <TouchableOpacity style={styles.sidebarItem}>
+          <AlertCircle size={20} color="#6B6B6B" strokeWidth={2} />
+          <Text style={styles.sidebarText}>QR Alerts</Text>
         </TouchableOpacity>
       </View>
-
-      <TouchableOpacity style={[styles.desktopNavItem, { marginTop: 'auto' }]}>
-        <Feather name="user" size={20} color="#666" />
-        <Text style={styles.desktopNavText}>Profile</Text>
+      <TouchableOpacity style={styles.sidebarItem}>
+        <User size={20} color="#6B6B6B" strokeWidth={2} />
+        <Text style={styles.sidebarText}>Profile</Text>
       </TouchableOpacity>
     </View>
   );
@@ -199,13 +211,13 @@ export default function App() {
       {isLargeScreen ? (
         <View style={styles.desktopLayout}>
           <DesktopSidebar />
-          <View style={styles.desktopMainContent}>
+          <View style={styles.desktopMain}>
             <View style={styles.desktopHeader}>
               <View>
-                <Text style={styles.desktopWelcomeTitle}>Welcome back,</Text>
-                <Text style={styles.desktopWelcomeName}>{loading ? '...' : (data?.name || 'Beekeeper')}!</Text>
+                <Text style={styles.welcomeTextDark}>Welcome back,</Text>
+                <Text style={styles.welcomeNameDark}>{loading ? '...' : (data?.name || 'Beekeeper')}</Text>
               </View>
-              <TopControls />
+              <TopControls isDark={true} />
             </View>
             <ScrollView style={styles.scrollArea} contentContainerStyle={styles.desktopScrollInner}>
               <DashboardContent />
@@ -232,78 +244,191 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F7F7F7',
   },
+  scrollArea: {
+    flex: 1,
+  },
   // Mobile Layout
   mobileLayout: {
     flex: 1,
   },
-  scrollArea: {
+  mobileScrollInner: {
+    paddingBottom: 90, 
+  },
+  mobileContentWrapper: {
+    paddingHorizontal: 20,
+    marginTop: -24, 
+    zIndex: 20,
+  },
+  contentArea: {
     flex: 1,
   },
-  mobileScrollInner: {
-    paddingBottom: 100, // Space for bottom nav
+  // Desktop Layout
+  desktopLayout: {
+    flex: 1,
+    flexDirection: 'row',
   },
-  mobileHeroSection: {
+  desktopMain: {
+    flex: 1,
+  },
+  desktopScrollInner: {
+    paddingHorizontal: 40,
+    paddingBottom: 40,
+    maxWidth: 1200,
+  },
+  desktopHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+    paddingVertical: 36,
+  },
+  sidebar: {
+    width: 260,
+    backgroundColor: '#FFFFFF',
+    borderRightWidth: 1,
+    borderRightColor: '#E8E8E8',
+    padding: 24,
+    paddingTop: 36,
+  },
+  sidebarBrand: {
+    marginBottom: 48,
+  },
+  sidebarNav: {
+    flex: 1,
+  },
+  sidebarItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    marginBottom: 8,
+  },
+  sidebarItemActive: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    marginBottom: 8,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginLeft: -12, 
+  },
+  sidebarText: {
+    fontFamily: SANS_FONT,
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#6B6B6B',
+    marginLeft: 12,
+  },
+  sidebarTextActive: {
+    fontFamily: SANS_FONT,
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#111111',
+    marginLeft: 12,
+  },
+  // Hero Section
+  heroSection: {
     backgroundColor: '#000000',
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
+    borderBottomLeftRadius: 36,
+    borderBottomRightRadius: 36,
     paddingTop: Platform.OS === 'android' ? 40 : 20,
     paddingHorizontal: 20,
-    paddingBottom: 40,
+    paddingBottom: 70, 
     position: 'relative',
     overflow: 'hidden',
+    height: 380,
   },
-  mobileHeroTop: {
+  heroImage: {
+    position: 'absolute',
+    top: 0,
+    right: -50,
+    width: 350,
+    height: '100%',
+    opacity: 0.25,
+    zIndex: 1,
+  },
+  heroGradientOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    zIndex: 2,
+  },
+  heroTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 40,
     zIndex: 10,
   },
-  heroHexagon: {
-    position: 'absolute',
-    right: -20,
-    bottom: -20,
-    zIndex: 1,
+  heroWelcome: {
+    zIndex: 10,
+    marginTop: 10,
   },
   // Typography
   brandContainer: {
     alignItems: 'center',
   },
   headerTitle: {
-    fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' }),
-    fontSize: 20,
+    fontFamily: BRAND_FONT,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#ffffff',
-    letterSpacing: 1,
-  },
-  headerSubtitle: {
-    fontSize: 9,
-    fontWeight: '700',
-    color: '#999999',
-    marginTop: 2,
-    textTransform: 'uppercase',
     letterSpacing: 2,
+    textTransform: 'uppercase',
   },
-  welcomeSection: {
-    zIndex: 10,
-  },
-  welcomeTitle: {
-    fontSize: 28,
+  welcomeText: {
+    fontFamily: SANS_FONT,
+    fontSize: 16,
     fontWeight: '400',
-    color: '#ffffff',
-    fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' }),
+    color: '#E0E0E0',
+    marginBottom: 4,
   },
   welcomeName: {
+    fontFamily: SANS_FONT,
     fontSize: 32,
-    fontWeight: 'bold',
-    color: '#ffffff',
+    fontWeight: '700',
+    color: '#FFFFFF',
     marginBottom: 8,
-    fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' }),
+    letterSpacing: -0.5,
   },
   welcomeDesc: {
+    fontFamily: SANS_FONT,
     fontSize: 14,
-    color: '#aaaaaa',
-    fontWeight: '500',
+    color: '#CCCCCC',
+    fontWeight: '400',
+  },
+  welcomeTextDark: {
+    fontFamily: SANS_FONT,
+    fontSize: 16,
+    fontWeight: '400',
+    color: '#6B6B6B',
+    marginBottom: 4,
+  },
+  welcomeNameDark: {
+    fontFamily: SANS_FONT,
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#111111',
+    letterSpacing: -0.5,
+  },
+  sectionTitle: {
+    fontFamily: SANS_FONT,
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#999999',
+    letterSpacing: 1.2,
+    marginBottom: 16,
+    textTransform: 'uppercase',
+  },
+  statusSectionTitle: {
+    fontFamily: SANS_FONT,
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#999999',
+    letterSpacing: 1.2,
+    marginBottom: 12,
   },
   // Controls
   topControls: {
@@ -320,59 +445,26 @@ const styles = StyleSheet.create({
     right: 4,
     width: 8,
     height: 8,
-    backgroundColor: '#ff3b3b',
+    backgroundColor: '#FFFFFF',
     borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#000',
   },
-  // Dashboard Content
-  mobileContentWrapper: {
-    padding: 20,
-  },
-  mainContentArea: {
-    flex: 1,
-  },
-  sectionHeader: {
-    marginBottom: 20,
-    marginTop: 10,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#111111',
-    letterSpacing: 1.5,
-  },
-  sectionUnderline: {
-    width: 24,
-    height: 3,
-    backgroundColor: '#000000',
-    marginTop: 6,
-    borderRadius: 2,
-  },
-  // Stats
+  // Stats Grid & Cards
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginBottom: 24,
-  },
-  statsGridDesktop: {
-    flexWrap: 'nowrap',
-    gap: 20,
+    marginBottom: 28,
   },
   statCard: {
     width: '48%',
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
-    padding: 20,
+    height: 160,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 18,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#E5E5E5',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.03,
-    shadowRadius: 15,
-    elevation: 2,
+    borderColor: '#E8E8E8',
+    justifyContent: 'space-between',
   },
   statCardDesktop: {
     width: '23%',
@@ -382,218 +474,158 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 16,
   },
-  statIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 16,
-    backgroundColor: '#F7F7F7',
+  statIconWrapper: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#F5F5F5',
     justifyContent: 'center',
     alignItems: 'center',
   },
   statBody: {
-    alignItems: 'flex-start',
+    marginTop: 12,
   },
-  statNumber: {
+  statValue: {
+    fontFamily: SANS_FONT,
     fontSize: 28,
-    fontWeight: '800',
-    color: '#000000',
+    fontWeight: '700',
+    color: '#111111',
+    letterSpacing: -0.5,
   },
   statUnit: {
+    fontFamily: SANS_FONT,
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '600',
     color: '#999999',
     marginLeft: 4,
   },
-  statLabel: {
-    fontSize: 11,
+  statTitle: {
+    fontFamily: SANS_FONT,
+    fontSize: 10,
     fontWeight: '700',
-    color: '#999999',
+    color: '#6B6B6B',
     marginTop: 4,
-    letterSpacing: 1,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-  skeletonNumber: {
-    width: 60,
+  skeletonBlock: {
+    width: 48,
     height: 32,
-    backgroundColor: '#E5E5E5',
-    borderRadius: 4,
+    backgroundColor: '#F0F0F0',
+    borderRadius: 6,
     marginBottom: 4,
+  },
+  // Status
+  statusContainer: {
+    marginBottom: 32,
+  },
+  statusCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#111111',
+    marginRight: 12,
+  },
+  statusText: {
+    fontFamily: SANS_FONT,
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#111111',
   },
   // Actions
   actionsGrid: {
     flexDirection: 'column',
-  },
-  actionsGridDesktop: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-    justifyContent: 'space-between',
+    gap: 12,
   },
   actionCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 16,
     borderWidth: 1,
-    borderColor: '#E5E5E5',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.03,
-    shadowRadius: 15,
-    elevation: 2,
-    flex: isPlatformWeb() ? 1 : undefined,
-    minWidth: isPlatformWeb() ? 300 : '100%',
+    borderColor: '#E8E8E8',
+    height: 90,
   },
-  actionIconWrapper: {
+  actionIconWrapperDark: {
     width: 56,
     height: 56,
-    borderRadius: 18,
-    backgroundColor: '#000000',
+    borderRadius: 16,
+    backgroundColor: '#0A0A0A',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
   },
   actionTextWrapper: {
     flex: 1,
+    justifyContent: 'center',
   },
   actionTitle: {
+    fontFamily: SANS_FONT,
     fontSize: 16,
-    fontWeight: '700',
-    color: '#000000',
+    fontWeight: '600',
+    color: '#111111',
+    marginBottom: 2,
   },
   actionDesc: {
+    fontFamily: SANS_FONT,
     fontSize: 13,
-    fontWeight: '500',
-    color: '#999999',
-    marginTop: 4,
+    fontWeight: '400',
+    color: '#6B6B6B',
   },
-  // Mobile Bottom Nav
+  // Bottom Nav
   bottomNav: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#ffffff',
+    height: 82,
+    backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
+    borderTopColor: '#E8E8E8',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: Platform.OS === 'ios' ? 28 : 16, // Safe area approximation
+    paddingBottom: Platform.OS === 'ios' ? 20 : 0, 
   },
   navItem: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingTop: 8,
+    width: 60,
+    position: 'relative',
   },
-  navItemActive: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#000000',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 24,
+  navActiveIndicator: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#111111',
+    position: 'absolute',
+    top: -2,
   },
   navText: {
+    fontFamily: SANS_FONT,
     fontSize: 10,
-    fontWeight: '600',
-    color: '#666666',
+    fontWeight: '500',
+    color: '#999999',
     marginTop: 4,
   },
   navTextActive: {
-    fontSize: 12,
+    fontFamily: SANS_FONT,
+    fontSize: 10,
     fontWeight: '700',
-    color: '#ffffff',
-    marginLeft: 8,
-  },
-  // Desktop Layout
-  desktopLayout: {
-    flex: 1,
-    flexDirection: 'row',
-    backgroundColor: '#F7F7F7',
-  },
-  desktopSidebar: {
-    width: 260,
-    backgroundColor: '#ffffff',
-    borderRightWidth: 1,
-    borderRightColor: '#E5E5E5',
-    padding: 24,
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  desktopBrand: {
-    marginBottom: 48,
-    alignItems: 'flex-start',
-  },
-  desktopNav: {
-    flex: 1,
-  },
-  desktopNavItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    marginBottom: 8,
-  },
-  desktopNavItemActive: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#000000',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    marginBottom: 8,
-  },
-  desktopNavText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#666666',
-    marginLeft: 12,
-  },
-  desktopNavTextActive: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#ffffff',
-    marginLeft: 12,
-  },
-  desktopMainContent: {
-    flex: 1,
-    flexDirection: 'column',
-  },
-  desktopHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 40,
-    paddingVertical: 32,
-    backgroundColor: '#F7F7F7',
-  },
-  desktopWelcomeTitle: {
-    fontSize: 16,
-    color: '#666666',
-    fontWeight: '500',
-  },
-  desktopWelcomeName: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#000000',
-    fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' }),
+    color: '#111111',
     marginTop: 4,
-  },
-  desktopScrollInner: {
-    paddingHorizontal: 40,
-    paddingBottom: 40,
-    maxWidth: 1400,
   }
 });
-
-function isPlatformWeb() {
-  return Platform.OS === 'web';
-}
