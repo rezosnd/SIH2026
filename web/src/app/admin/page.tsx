@@ -106,31 +106,7 @@ export default function AdminDashboard() {
     return <span className={`text-xs font-bold px-2 py-0.5 rounded border ${map[s] || 'bg-gray-100 text-gray-600'}`}>{s.replace('_', ' ')}</span>;
   };
 
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-[#f3f4f6] flex items-center justify-center font-sans">
-        <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm text-center">
-          <div className="flex justify-center mb-4"><ShieldAlert className="w-12 h-12 text-gray-900" /></div>
-          <h1 className="text-xl font-black uppercase tracking-widest text-gray-900 mb-2">HoneyChain Admin</h1>
-          <p className="text-xs text-gray-500 mb-6 font-semibold">Enter your secure password to continue</p>
-          <input 
-            type="password" 
-            value={password} 
-            onChange={e => setPassword(e.target.value)}
-            placeholder="Password"
-            className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900 mb-4 text-center font-mono"
-            onKeyDown={e => e.key === 'Enter' && password === 'password123' && setIsAuthenticated(true)}
-          />
-          <button 
-            onClick={() => password === 'password123' && setIsAuthenticated(true)}
-            className="w-full bg-gray-900 text-white font-bold py-3 rounded-lg hover:bg-black transition-colors"
-          >
-            LOGIN
-          </button>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="min-h-screen bg-[#f3f4f6] flex font-sans text-gray-900">
@@ -146,10 +122,13 @@ export default function AdminDashboard() {
           <NavItem id="alerts" icon={AlertTriangle} label="Security Alerts" />
           <NavItem id="notifications" icon={Bell} label="Notifications" />
         </nav>
-        <div className="p-4 border-t border-gray-100">
-          <a href="/kvic/dashboard" className="flex items-center px-4 py-2 text-gray-500 hover:text-black text-sm font-semibold">
+        <div className="p-4 border-t border-gray-100 flex flex-col gap-2">
+          <a href="/kvic/dashboard" className="flex items-center px-4 py-2 text-gray-500 hover:text-black text-sm font-semibold transition-colors">
             <Users className="w-4 h-4 mr-2" /> KVIC View
           </a>
+          <button onClick={() => window.location.href = '/'} className="flex items-center px-4 py-2 text-red-500 hover:bg-red-50 rounded-md text-sm font-semibold transition-colors w-full text-left">
+            <XCircle className="w-4 h-4 mr-2" /> Logout
+          </button>
         </div>
       </aside>
 
