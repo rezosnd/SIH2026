@@ -118,8 +118,8 @@ export default function KvicDashboard() {
 
           {(activeSection === 'clusters') && !loading && (
             <div className="grid gap-4">
-              {(data as any[]).length === 0 ? <p className="text-gray-400 font-semibold text-center py-16">No clusters found.</p> :
-                (data as any[]).map((c: any) => (
+              {(Array.isArray(data) ? data : []).length === 0 ? <p className="text-gray-400 font-semibold text-center py-16">No clusters found.</p> :
+                (Array.isArray(data) ? data : []).map((c: any) => (
                   <div key={c.id} className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
                     <div className="flex justify-between items-start">
                       <div>
@@ -146,9 +146,9 @@ export default function KvicDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {(data as any[]).length === 0 ? (
+                  {(Array.isArray(data) ? data : []).length === 0 ? (
                     <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-400 font-semibold">No beekeepers registered.</td></tr>
-                  ) : (data as any[]).map((b: any) => (
+                  ) : (Array.isArray(data) ? data : []).map((b: any) => (
                     <tr key={b.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-5 py-4 font-semibold">{b.name}</td>
                       <td className="px-5 py-4 text-gray-600">{b.farmLocation}</td>
@@ -174,9 +174,9 @@ export default function KvicDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {(data as any[]).length === 0 ? (
+                  {(Array.isArray(data) ? data : []).length === 0 ? (
                     <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-400 font-semibold">No hives registered.</td></tr>
-                  ) : (data as any[]).map((h: any) => (
+                  ) : (Array.isArray(data) ? data : []).map((h: any) => (
                     <tr key={h.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-5 py-4 font-semibold">{h.location}</td>
                       <td className="px-5 py-4">
@@ -203,9 +203,9 @@ export default function KvicDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {(data as any[]).length === 0 ? (
+                  {(Array.isArray(data) ? data : []).length === 0 ? (
                     <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-400 font-semibold">No batches found.</td></tr>
-                  ) : (data as any[]).map((b: any) => (
+                  ) : (Array.isArray(data) ? data : []).map((b: any) => (
                     <tr key={b.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-5 py-4 font-mono text-xs">{b.id.slice(0,8).toUpperCase()}</td>
                       <td className="px-5 py-4 text-gray-600">{b.hive?.location || '—'}</td>
@@ -258,12 +258,12 @@ export default function KvicDashboard() {
 
           {activeSection === 'security' && !loading && (
             <div className="space-y-4">
-              {(data as any[]).length === 0 ? (
+              {(Array.isArray(data) ? data : []).length === 0 ? (
                 <div className="bg-white rounded-xl p-12 text-center border border-gray-200">
                   <ShieldAlert className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                   <p className="font-bold text-gray-400">No active security alerts visible to KVIC.</p>
                 </div>
-              ) : (data as any[]).map((a: any) => (
+              ) : (Array.isArray(data) ? data : []).map((a: any) => (
                 <div key={a.id} className="bg-white rounded-xl border border-red-200 shadow-sm p-5 border-l-4 border-l-red-500">
                   <div className="flex items-center gap-3 mb-2">
                     <AlertTriangle className="w-4 h-4 text-red-500" />

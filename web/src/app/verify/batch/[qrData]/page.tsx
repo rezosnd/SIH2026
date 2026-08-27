@@ -17,13 +17,36 @@ export default function BatchVerificationPage() {
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://backend-eight-jade-26.vercel.app';
 
-        // Try to record a QR scan (might fail if this is a batch QR not a container QR — that's OK)
+        // 1. Get user location (ask for permission)
+        let locationPayload = {};
+        try {
+          const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+            if (!navigator.geolocation) return reject('No geolocation');
+            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 });
+          });
+          
+          // Reverse geocode to get city/country using free API
+          const { latitude, longitude } = position.coords;
+          const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
+          if (geoRes.ok) {
+            const geoData = await geoRes.json();
+            locationPayload = {
+              city: geoData.city || geoData.locality,
+              state: geoData.principalSubdivision,
+              country: geoData.countryName,
+            };
+          }
+        } catch (err) {
+          console.warn('Geolocation failed or denied:', err);
+        }
+
+        // 2. Try to record a QR scan
         let scanStatus = 'VERIFIED';
         try {
           const scanRes = await fetch(`${apiUrl}/qr/${encodeURIComponent(qrData)}/scan`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({}),
+            body: JSON.stringify(locationPayload),
           });
           if (scanRes.ok) {
             const scanResult = await scanRes.json();
@@ -36,7 +59,7 @@ export default function BatchVerificationPage() {
           // Container QR scan failed — this is a batch QR, scanStatus stays VERIFIED
         }
 
-        // Fetch batch data using batch-level QR verification
+        // 3. Fetch batch data using batch-level QR verification
         const batchRes = await fetch(`${apiUrl}/batches/verify/${encodeURIComponent(qrData)}`);
         if (!batchRes.ok) {
           setStatus('INVALID');
