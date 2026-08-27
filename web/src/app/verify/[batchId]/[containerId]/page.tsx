@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { CheckCircle, AlertTriangle, XCircle, MapPin, Calendar, Box, Droplet, ChevronRight, Activity, ShieldCheck, Search } from 'lucide-react';
+import { ShieldCheck, AlertTriangle, XCircle, MapPin, Calendar, CheckCircle2, QrCode } from 'lucide-react';
 import { useParams } from 'next/navigation';
 
 export default function VerificationPage() {
   const params = useParams();
-  const batchId = params.batchId as string;
   const containerId = params.containerId as string;
 
   const [status, setStatus] = useState<'LOADING' | 'VERIFIED' | 'SUSPICIOUS' | 'INVALID'>('LOADING');
@@ -20,9 +19,7 @@ export default function VerificationPage() {
         const res = await fetch(`${apiUrl}/qr/${containerId}/scan`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            // Backend extracts IP, User-Agent, and geolocation automatically
-          }),
+          body: JSON.stringify({}),
         });
         
         if (!res.ok) {
@@ -42,7 +39,7 @@ export default function VerificationPage() {
         setData(passportData);
         setStatus(scanResult.status);
         if (scanResult.status === 'SUSPICIOUS') {
-           setRiskReason('Warning: Suspicious QR activity detected. Unrealistic geographic movement or excessive scanning identified.');
+           setRiskReason('Unrealistic geographic movement or excessive scanning identified.');
         }
         
       } catch (err) {
@@ -55,8 +52,8 @@ export default function VerificationPage() {
 
   if (status === 'LOADING') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-black"></div>
+      <div className="min-h-screen flex items-center justify-center bg-[#f2f2f7]">
+        <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-200 border-t-blue-600"></div>
       </div>
     );
   }
@@ -65,119 +62,116 @@ export default function VerificationPage() {
   const isSuspicious = status === 'SUSPICIOUS';
   
   return (
-    <main className="min-h-screen bg-[#fafafa] pb-12 font-sans text-gray-900">
-      <div className="bg-white shadow-sm border-b border-gray-200">
-         <div className="max-w-2xl mx-auto px-6 py-6 text-center flex flex-col items-center">
-            <img 
-              src="https://sih.gov.in/img1/SIH2026-logo.png" 
-              alt="SIH 2026 Logo" 
-              className="h-16 mb-4 object-contain"
-            />
-            <h1 className="text-2xl font-black tracking-widest uppercase text-gray-900">HoneyChain</h1>
-            <p className="text-xs font-bold text-gray-600 mt-1 uppercase tracking-widest bg-gray-100 px-3 py-1 rounded-md border border-gray-200">Digital Honey Passport</p>
-         </div>
-      </div>
+    <main className="min-h-screen bg-[#f2f2f7] flex flex-col items-center pt-8 pb-12 px-4 font-sans sm:px-6">
+      
+      {/* Wallet Pass Container */}
+      <div className="w-full max-w-md relative drop-shadow-2xl filter">
+        
+        {/* Pass Header & Main Body */}
+        <div className={`rounded-t-3xl overflow-hidden relative ${isSuspicious ? 'bg-[#c62828]' : status === 'INVALID' ? 'bg-gray-800' : 'bg-[#007aff]'}`}>
+           
+           {/* Top Header */}
+           <div className="px-6 pt-6 pb-4 flex justify-between items-center">
+              <div className="flex items-center space-x-2">
+                 <img src="https://sih.gov.in/img1/SIH2026-logo.png" alt="SIH" className="h-8 brightness-0 invert opacity-90" />
+                 <h1 className="text-white font-bold text-lg tracking-wide">HoneyChain</h1>
+              </div>
+              <div className="text-right">
+                 <p className="text-white/80 text-[10px] font-black uppercase tracking-widest">Status</p>
+                 <p className="text-[#ffcc00] font-bold text-xl leading-none">{status}</p>
+              </div>
+           </div>
 
-      <div className="max-w-2xl mx-auto px-4 mt-8">
-        <div className={`p-10 rounded-xl shadow-sm mb-8 flex flex-col items-center justify-center text-center border-2 ${
-            isVerified ? 'bg-white border-green-500' : 
-            isSuspicious ? 'bg-white border-red-500' : 
-            'bg-white border-gray-200'
-        }`}>
-            {isVerified && <ShieldCheck className="w-20 h-20 text-green-600 mb-4" />}
-            {isSuspicious && <AlertTriangle className="w-20 h-20 text-red-600 mb-4" />}
-            {status === 'INVALID' && <XCircle className="w-20 h-20 text-gray-400 mb-4" />}
-            
-            <h2 className={`text-4xl font-black uppercase tracking-widest ${
-               isVerified ? 'text-green-700' : isSuspicious ? 'text-red-700' : 'text-gray-900'
-            }`}>
-               {status}
-            </h2>
-            {isSuspicious && (
-               <p className="mt-4 text-red-700 font-bold max-w-md mx-auto p-4 bg-red-50 rounded border border-red-200">
-                  {riskReason}
-               </p>
-            )}
-            {isVerified && (
-               <p className="mt-4 text-green-800 font-bold max-w-md mx-auto p-4 bg-green-50 rounded border border-green-200">
-                  Authenticity Confirmed. This product has passed all cryptographic and supply chain checks.
-               </p>
-            )}
+           {/* Route / Origin -> Destination equivalent */}
+           <div className="px-6 py-6 border-t border-white/10 mt-2">
+              <div className="flex justify-between items-center">
+                 <div className="w-2/5">
+                    <p className="text-white/80 text-[10px] font-black uppercase tracking-widest mb-1">Origin</p>
+                    <p className="text-[#ffcc00] font-bold text-4xl truncate" title={data?.hive?.location}>
+                       {data?.hive?.location?.substring(0, 3).toUpperCase() || 'UNK'}
+                    </p>
+                 </div>
+                 
+                 <div className="w-1/5 flex justify-center text-white/50">
+                    <MapPin className="w-8 h-8" />
+                 </div>
+                 
+                 <div className="w-2/5 text-right">
+                    <p className="text-white/80 text-[10px] font-black uppercase tracking-widest mb-1">Destination</p>
+                    <p className="text-[#ffcc00] font-bold text-4xl">YOU</p>
+                 </div>
+              </div>
+           </div>
+
+           {/* Flight Details equivalent */}
+           <div className="px-6 pb-6">
+              <div className="flex justify-between items-end border-t border-white/10 pt-4">
+                 <div>
+                    <p className="text-white/80 text-[10px] font-black uppercase tracking-widest mb-1">Harvested</p>
+                    <p className="text-[#ffcc00] font-medium text-lg">{data?.harvestDate ? new Date(data.harvestDate).toLocaleDateString(undefined, {month: 'short', day: 'numeric'}) : '--'}</p>
+                 </div>
+                 <div className="text-center">
+                    <p className="text-white/80 text-[10px] font-black uppercase tracking-widest mb-1">Quality</p>
+                    <p className="text-[#ffcc00] font-medium text-lg">{isVerified ? 'PASSED' : 'FAIL'}</p>
+                 </div>
+                 <div className="text-right">
+                    <p className="text-white/80 text-[10px] font-black uppercase tracking-widest mb-1">Batch ID</p>
+                    <p className="text-[#ffcc00] font-medium text-lg truncate w-16">{data?.id?.substring(0,6).toUpperCase() || '--'}</p>
+                 </div>
+              </div>
+           </div>
+           
+           {/* Passenger Name equivalent */}
+           <div className="px-6 pb-8">
+             <p className="text-white text-lg font-medium">{isSuspicious ? riskReason : isVerified ? 'Cryptographically Verified Authentic Honey' : 'Invalid QR Code'}</p>
+           </div>
         </div>
 
-        {status !== 'INVALID' && data && (
-           <>
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
-                 <div className="p-5 border-b border-gray-200 bg-gray-50 flex items-center">
-                    <h3 className="font-bold text-black text-sm uppercase tracking-widest">Product Origin</h3>
-                 </div>
-                 <div className="p-8 grid grid-cols-2 gap-y-8 gap-x-6">
-                    <div>
-                       <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2 flex items-center"><MapPin className="w-4 h-4 mr-1.5" /> Location</p>
-                       <p className="font-bold text-black text-lg">{data.hive?.location || 'Unknown API'}</p>
-                    </div>
-                    <div>
-                       <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2 flex items-center"><Calendar className="w-4 h-4 mr-1.5" /> Harvest Date</p>
-                       <p className="font-bold text-black text-lg">{new Date(data.harvestDate).toLocaleDateString()}</p>
-                    </div>
-                    <div>
-                       <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2 flex items-center"><Droplet className="w-4 h-4 mr-1.5" /> Batch ID</p>
-                       <p className="font-mono text-sm font-bold text-black break-all bg-gray-100 px-2 py-1 rounded border border-gray-200 inline-block">{data.id}</p>
-                    </div>
-                    <div>
-                       <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2 flex items-center"><Box className="w-4 h-4 mr-1.5" /> Quality Status</p>
-                       <p className="font-black text-green-700 bg-green-50 px-3 py-1 rounded border border-green-200 inline-block text-xs tracking-widest uppercase">PASSED</p>
-                    </div>
-                 </div>
-              </div>
+        {/* Cutout Separator */}
+        <div className="relative h-8 -my-4 z-10 flex items-center">
+           <div className={`absolute left-0 w-8 h-8 -ml-4 rounded-full bg-[#f2f2f7]`}></div>
+           <div className="w-full border-t-2 border-dashed border-gray-400 opacity-40"></div>
+           <div className={`absolute right-0 w-8 h-8 -mr-4 rounded-full bg-[#f2f2f7]`}></div>
+        </div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
-                 <div className="p-5 border-b border-gray-200 bg-gray-50">
-                    <h3 className="font-bold text-black text-sm uppercase tracking-widest">Honey Journey</h3>
-                 </div>
-                  <div className="p-8">
-                     <div className="relative border-l-2 border-gray-200 ml-4 space-y-10 py-2">
+        {/* Bottom QR Section */}
+        <div className="bg-white rounded-b-3xl px-6 pt-10 pb-8 flex flex-col items-center border-t-0 shadow-inner">
+           
+           {/* Timeline / Trace */}
+           {data?.events && (
+             <div className="w-full mb-8">
+               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Blockchain Trace</p>
+               <div className="space-y-4">
+                 {data.events.slice(-3).map((evt: any, idx: number) => (
+                   <div key={idx} className="flex items-center text-sm">
+                     <CheckCircle2 className="w-4 h-4 text-green-500 mr-3 flex-shrink-0" />
+                     <div className="flex-1">
+                       <p className="font-bold text-gray-900">{evt.eventType}</p>
+                       <p className="text-xs text-gray-500">{new Date(evt.timestamp).toLocaleString()}</p>
+                     </div>
+                   </div>
+                 ))}
+               </div>
+             </div>
+           )}
 
-                       {data.events?.map((evt: any, idx: number) => (
-                          <div key={idx} className="relative pl-10">
-                             <div className="absolute -left-[11px] top-1 w-5 h-5 rounded-full bg-black border-4 border-white shadow-sm"></div>
-                             <p className="text-xs font-black text-gray-900 uppercase mb-1 tracking-widest">{evt.eventType}</p>
-                             <p className="text-gray-600 font-semibold text-base">{evt.description || 'Processing Completed'}</p>
-                             <p className="text-xs font-bold text-gray-400 mt-1.5">{new Date(evt.timestamp).toLocaleString()}</p>
-                          </div>
-                       ))}
-                       
-                       {isVerified && (
-                         <div className="relative pl-10">
-                            <div className="absolute -left-[11px] top-1 w-5 h-5 rounded-full bg-green-500 border-4 border-white shadow-sm"></div>
-                            <p className="text-xs font-black text-green-700 uppercase mb-1 tracking-widest">Verified</p>
-                            <p className="text-gray-900 font-bold text-base">Consumer Verification Passed</p>
-                         </div>
-                       )}
+           {/* QR Code Placeholder / Real Data */}
+           <div className="bg-white p-4 rounded-xl border-2 border-gray-100 shadow-sm mb-6 flex flex-col items-center justify-center w-48 h-48">
+              <QrCode className="w-32 h-32 text-gray-900" strokeWidth={1} />
+           </div>
 
-                    </div>
-                 </div>
-              </div>
-
-              <div className="bg-black rounded-xl shadow-lg border border-gray-900 overflow-hidden text-gray-100 mb-12">
-                 <div className="p-5 border-b border-gray-800 flex items-center justify-between">
-                    <h3 className="font-bold text-white flex items-center text-sm uppercase tracking-widest"><Activity className="w-4 h-4 mr-2" /> Blockchain Proof</h3>
-                    <span className="text-[10px] font-black uppercase tracking-widest bg-gray-800 text-gray-300 px-3 py-1 rounded-full border border-gray-700">Polygon EVM</span>
-                 </div>
-                 <div className="p-8 space-y-5">
-                    <div>
-                       <p className="text-xs font-bold text-gray-500 mb-2 uppercase tracking-widest">Transaction Hash</p>
-                       <p className="text-sm font-mono text-gray-300 break-all bg-gray-900 p-4 rounded border border-gray-800">{data.txHash || '0xPendingNetworkConfirmation...'}</p>
-                    </div>
-                    {data.txHash && (
-                       <a href={`https://amoy.polygonscan.com/tx/${data.txHash}`} target="_blank" className="text-xs font-bold text-white hover:text-gray-300 flex items-center mt-4 transition-colors uppercase tracking-widest underline underline-offset-4 decoration-gray-600">
-                          View on Blockchain Explorer <ChevronRight className="w-4 h-4 ml-1" />
-                       </a>
-                    )}
-                 </div>
-              </div>
-           </>
-        )}
+           {/* Tx Hash */}
+           {data?.txHash && (
+             <div className="text-center w-full">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Polygon EVM Hash</p>
+                <p className="text-xs font-mono text-gray-600 bg-gray-50 py-2 px-3 rounded-md break-all border border-gray-100">{data.txHash}</p>
+                <a href={`https://amoy.polygonscan.com/tx/${data.txHash}`} target="_blank" rel="noreferrer" className="text-[10px] font-bold text-[#007aff] mt-3 inline-block uppercase tracking-widest hover:underline">
+                  View on Explorer
+                </a>
+             </div>
+           )}
+           
+        </div>
       </div>
     </main>
   );
