@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useCallback } from 'react';
-import { ShieldAlert, Users, Hexagon, BarChart3, Activity, PackageCheck, AlertTriangle, Bell, ChevronRight, CheckCircle, XCircle, Eye } from 'lucide-react';
+import { ShieldAlert, Users, Hexagon, BarChart3, Activity, PackageCheck, AlertTriangle, Bell, ChevronRight, CheckCircle, XCircle, Eye, Cpu, Thermometer, Droplets, Wind, Scale, Sun } from 'lucide-react';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://backend-eight-jade-26.vercel.app';
 
@@ -21,6 +21,20 @@ export default function AdminDashboard() {
   const [activeSection, setActiveSection] = useState('overview');
   const [token, setToken] = useState('');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [iotHives, setIotHives] = useState<any[]>([]);
+  const [selectedHive, setSelectedHive] = useState<any>(null);
+
+  const fetchHiveDetails = async (id: string) => {
+    try {
+      const r = await fetch(`${API}/iot/hives/${id}`, { headers: { Authorization: `Bearer ${token}` }});
+      if (r.ok) {
+        setSelectedHive(await r.json());
+        setActiveSection('iot_details');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const load = useCallback(async () => {
     try {
@@ -45,6 +59,12 @@ export default function AdminDashboard() {
         const n = await (notifRes as any).json();
         setNotifications(n);
         setUnread(n.filter((x: any) => !x.read).length);
+      }
+      
+      // Attempt to fetch all hives (or just use stats to render a placeholder list for the demo)
+      const hivesRes = await fetch(`${API}/hives`, { headers });
+      if (hivesRes.ok) {
+        setIotHives(await hivesRes.json());
       }
     } catch (e) {
       console.error(e);
@@ -120,6 +140,7 @@ export default function AdminDashboard() {
           <NavItem id="overview" icon={BarChart3} label="Overview" />
           <NavItem id="security" icon={ShieldAlert} label="QR Security Center" />
           <NavItem id="alerts" icon={AlertTriangle} label="Security Alerts" />
+          <NavItem id="iot" icon={Cpu} label="IoT Monitoring" />
           <NavItem id="notifications" icon={Bell} label="Notifications" />
         </nav>
         <div className="p-4 border-t border-gray-100 flex flex-col gap-2">
@@ -141,6 +162,8 @@ export default function AdminDashboard() {
               {activeSection === 'overview' && 'System Overview'}
               {activeSection === 'security' && 'QR Security Center'}
               {activeSection === 'alerts' && 'Security Alerts'}
+              {activeSection === 'iot' && 'Hive IoT Monitoring'}
+              {activeSection === 'iot_details' && 'Hive Details'}
               {activeSection === 'notifications' && 'Notifications'}
             </h2>
             <p className="text-gray-400 text-xs font-semibold uppercase tracking-widest mt-0.5">Polling every 15s</p>
@@ -291,6 +314,113 @@ export default function AdminDashboard() {
               ))}
             </div>
           )}
+          {activeSection === 'iot' && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
+                  <h3 className="font-bold text-sm uppercase tracking-wider">Registered Hives</h3>
+                  <span className="text-xs text-gray-400 font-semibold">{iotHives.length} total</span>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50 border-b border-gray-100">
+                      <tr>
+                        {['Location', 'Status', 'Actions'].map(h => (
+                          <th key={h} className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {iotHives.length === 0 ? (
+                        <tr><td colSpan={3} className="px-6 py-12 text-center text-gray-400 font-semibold">No Hives found.</td></tr>
+                      ) : (
+                        iotHives.map(h => (
+                          <tr key={h.id} className="hover:bg-gray-50 transition-colors">
+                            <td className="px-4 py-3 font-medium">{h.location}</td>
+                            <td className="px-4 py-3"><StatusBadge status={h.status} /></td>
+                            <td className="px-4 py-3">
+                              <button onClick={() => fetchHiveDetails(h.id)} className="px-3 py-1 bg-black text-white rounded text-xs font-bold hover:bg-gray-800 transition-colors">
+                                VIEW DETAILS
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* IOT DETAILS */}
+          {activeSection === 'iot_details' && selectedHive && (
+            <div className="space-y-6">
+              <button onClick={() => setActiveSection('iot')} className="text-sm font-bold text-gray-500 hover:text-black mb-4 flex items-center">
+                ← Back to Hive List
+              </button>
+              
+              <div className="bg-white rounded-xl border border-gray-200 p-6 flex justify-between items-center shadow-sm">
+                <div>
+                  <h2 className="text-2xl font-black text-gray-900">{selectedHive.location.toUpperCase()}</h2>
+                  <p className="text-sm text-gray-500 mt-1 font-semibold">Beekeeper: {selectedHive.beekeeper} • Registered: {new Date(selectedHive.installationDate).toLocaleDateString()}</p>
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-2 mb-1 justify-end">
+                    <div className={`w-2.5 h-2.5 rounded-full ${selectedHive.device?.status === 'ONLINE' ? 'bg-green-500' : 'bg-red-500'}`} />
+                    <span className={`font-bold ${selectedHive.device?.status === 'ONLINE' ? 'text-green-600' : 'text-red-600'}`}>{selectedHive.device?.status || 'OFFLINE'}</span>
+                  </div>
+                  <p className="text-xs text-gray-400 font-mono font-bold">{selectedHive.device?.deviceId || 'NO DEVICE CONNECTED'}</p>
+                </div>
+              </div>
+
+              {!selectedHive.current ? (
+                <div className="bg-red-50 border border-red-100 rounded-xl p-8 flex flex-col items-center justify-center">
+                  <AlertTriangle className="w-12 h-12 text-red-400 mb-4" />
+                  <h3 className="text-lg font-black text-red-600 mb-2">NO SENSOR READINGS AVAILABLE</h3>
+                  <p className="text-red-500 font-medium">Connect the physical ESP32 device to this hive to begin monitoring.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                  <MetricCard label="Temperature" value={`${selectedHive.current.temperature} °C`} />
+                  <MetricCard label="Humidity" value={`${selectedHive.current.humidity} %`} />
+                  <MetricCard label="Pressure" value={`${selectedHive.current.pressure} hPa`} />
+                  <MetricCard label="Rain" value={selectedHive.current.rain ? 'DETECTED' : 'NO RAIN'} />
+                  <MetricCard label="UV" value={selectedHive.current.uv || 'N/A'} />
+                  <MetricCard label="Weight" value={selectedHive.current.weight ? `${selectedHive.current.weight} kg` : 'N/A'} color={!selectedHive.current.weight ? "text-red-500" : ""} />
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Sensor Health Status</h3>
+                  <div className="space-y-4">
+                    {[
+                      { name: 'DHT11', status: selectedHive.current?.temperature ? 'ONLINE' : 'OFFLINE' },
+                      { name: 'BMP180', status: selectedHive.current?.pressure ? 'ONLINE' : 'OFFLINE' },
+                      { name: 'Rain Drop', status: selectedHive.current?.rain !== undefined ? 'ONLINE' : 'OFFLINE' },
+                      { name: 'GUVA-S12SD', status: selectedHive.current?.uv ? 'ONLINE' : 'OFFLINE' },
+                      { name: 'Load Cell', status: selectedHive.current?.weight ? 'ONLINE' : 'NOT CONNECTED' },
+                    ].map(s => (
+                      <div key={s.name} className="flex justify-between items-center pb-3 border-b border-gray-50 last:border-0 last:pb-0">
+                        <span className="font-semibold text-gray-700">{s.name}</span>
+                        <span className={`text-xs font-black px-2 py-1 rounded ${s.status === 'ONLINE' ? 'bg-green-100 text-green-700' : s.status === 'NOT CONNECTED' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-500'}`}>{s.status}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Environment Status</h3>
+                  <div className="flex flex-col items-center justify-center h-full pb-8">
+                    <span className="text-4xl font-black text-gray-900 mb-2">{selectedHive.environment?.status || 'UNKNOWN'}</span>
+                    <span className="text-sm font-bold text-gray-400">Rule-Based Score: {selectedHive.environment?.score || 0} / 100</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
       </main>
     </div>

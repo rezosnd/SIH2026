@@ -147,7 +147,7 @@ export default function App() {
     return (
     <View style={[
       styles.heroSection, 
-      !isDashboard && { backgroundColor: 'rgba(255,255,255,0.4)', paddingBottom: 15, paddingTop: Platform.OS === 'android' ? 50 : 25, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.05)', height: 'auto', borderBottomLeftRadius: 0, borderBottomRightRadius: 0 },
+      !isDashboard && { backgroundColor: 'rgba(255,255,255,0.92)', paddingBottom: 15, paddingTop: Platform.OS === 'android' ? 50 : 25, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.05)', height: 'auto', borderBottomLeftRadius: 0, borderBottomRightRadius: 0 },
       isDashboard && { backgroundColor: 'rgba(17,17,17,0.95)' }
     ]}>
       {isDashboard && <HoneycombBackground />}
@@ -449,32 +449,32 @@ export default function App() {
           <>
             <Text style={styles.sectionTitle}>CURRENT CONDITIONS</Text>
             <View style={{flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between'}}>
-          <View style={[styles.statCardDesktop, {width: '48%', marginBottom: 12}]}>
-            <Text style={styles.statTitle}>Temperature</Text>
-            <Text style={styles.statValue}>{hiveDetails.current?.temperature ? `${hiveDetails.current.temperature} °C` : 'N/A'}</Text>
-          </View>
-          <View style={[styles.statCardDesktop, {width: '48%', marginBottom: 12}]}>
-            <Text style={styles.statTitle}>Humidity</Text>
-            <Text style={styles.statValue}>{hiveDetails.current?.humidity ? `${hiveDetails.current.humidity} %` : 'N/A'}</Text>
-          </View>
-          <View style={[styles.statCardDesktop, {width: '48%', marginBottom: 12}]}>
-            <Text style={styles.statTitle}>Pressure</Text>
-            <Text style={styles.statValue}>{hiveDetails.current?.pressure ? `${hiveDetails.current.pressure} hPa` : 'N/A'}</Text>
-          </View>
-          <View style={[styles.statCardDesktop, {width: '48%', marginBottom: 12}]}>
-            <Text style={styles.statTitle}>Hive Weight</Text>
-            <Text style={[styles.statValue, !hiveDetails.current?.weight && {fontSize: 14, color: '#EF4444'}]}>
-              {hiveDetails.current?.weight ? `${hiveDetails.current.weight} kg` : 'NOT CONNECTED'}
-            </Text>
-          </View>
-          <View style={[styles.statCardDesktop, {width: '48%', marginBottom: 12}]}>
-            <Text style={styles.statTitle}>Rain</Text>
-            <Text style={styles.statValue}>{hiveDetails.current?.rain ? 'RAIN DETECTED' : 'NO RAIN'}</Text>
-          </View>
-          <View style={[styles.statCardDesktop, {width: '48%', marginBottom: 12}]}>
-            <Text style={styles.statTitle}>UV</Text>
-            <Text style={styles.statValue}>{hiveDetails.current?.uv ? hiveDetails.current.uv : 'N/A'}</Text>
-          </View>
+              <View style={[styles.statCard, {width: '48%', height: 'auto', paddingVertical: 20}]}>
+                <Text style={styles.statTitle}>Temperature</Text>
+                <Text style={[styles.statValue, {marginTop: 8}]}>{hiveDetails.current?.temperature ? `${hiveDetails.current.temperature} °C` : 'N/A'}</Text>
+              </View>
+              <View style={[styles.statCard, {width: '48%', height: 'auto', paddingVertical: 20}]}>
+                <Text style={styles.statTitle}>Humidity</Text>
+                <Text style={[styles.statValue, {marginTop: 8}]}>{hiveDetails.current?.humidity ? `${hiveDetails.current.humidity} %` : 'N/A'}</Text>
+              </View>
+              <View style={[styles.statCard, {width: '48%', height: 'auto', paddingVertical: 20}]}>
+                <Text style={styles.statTitle}>Pressure</Text>
+                <Text style={[styles.statValue, {marginTop: 8, fontSize: 24}]}>{hiveDetails.current?.pressure ? `${hiveDetails.current.pressure} hPa` : 'N/A'}</Text>
+              </View>
+              <View style={[styles.statCard, {width: '48%', height: 'auto', paddingVertical: 20}]}>
+                <Text style={styles.statTitle}>Hive Weight</Text>
+                <Text style={[styles.statValue, {marginTop: 8}, !hiveDetails.current?.weight && {fontSize: 16, color: '#EF4444'}]}>
+                  {hiveDetails.current?.weight ? `${hiveDetails.current.weight} kg` : 'NOT CONNECTED'}
+                </Text>
+              </View>
+              <View style={[styles.statCard, {width: '48%', height: 'auto', paddingVertical: 20}]}>
+                <Text style={styles.statTitle}>Rain</Text>
+                <Text style={[styles.statValue, {marginTop: 8, fontSize: hiveDetails.current?.rain ? 20 : 24}]}>{hiveDetails.current?.rain ? 'DETECTED' : 'NO RAIN'}</Text>
+              </View>
+              <View style={[styles.statCard, {width: '48%', height: 'auto', paddingVertical: 20}]}>
+                <Text style={styles.statTitle}>UV (GUVA)</Text>
+                <Text style={[styles.statValue, {marginTop: 8}]}>{hiveDetails.current?.uv ? hiveDetails.current.uv : 'N/A'}</Text>
+              </View>
             </View>
           </>
         )}
@@ -722,7 +722,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <ImageBackground source={require('./assets/bg.png')} style={{ flex: 1 }} resizeMode="cover">
-        <View style={{ flex: 1, backgroundColor: 'rgba(243, 244, 246, 0.85)' }}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(243, 244, 246, 0.65)' }}>
           <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}>
             <StatusBar style={isLargeScreen ? "dark" : "light"} />
             
@@ -1093,7 +1093,8 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: '#E7E7E7',
-    height: 86,
+    height: 'auto',
+    minHeight: 86,
   },
   actionIconWrapperDark: {
     width: 54,
