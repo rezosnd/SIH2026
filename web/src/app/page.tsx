@@ -15,23 +15,16 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f8f9fa] flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-100 rounded-full blur-3xl opacity-50"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-orange-100 rounded-full blur-3xl opacity-50"></div>
-
-      <div className="max-w-4xl w-full bg-white/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden border border-gray-100 relative z-10">
-        <div className="p-12 text-center flex flex-col items-center border-b border-gray-100 bg-gradient-to-b from-white to-gray-50/50">
+    <main className="min-h-screen bg-[#fafafa] flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
+      <div className="max-w-4xl w-full bg-white rounded-xl shadow-[0_4px_24px_rgb(0,0,0,0.04)] overflow-hidden border border-gray-200 relative z-10">
+        <div className="p-12 text-center flex flex-col items-center border-b border-gray-200 bg-white">
           <img 
             src="https://sih.gov.in/img1/SIH2026-logo.png" 
             alt="SIH 2026 Logo" 
-            className="h-24 mb-6 object-contain"
+            className="h-20 mb-8 object-contain"
           />
-          <div className="flex items-center space-x-3 mb-4">
-             <ShieldCheck className="w-8 h-8 text-blue-600" />
-             <h1 className="text-4xl font-black text-gray-900 tracking-tight">HoneyChain</h1>
-          </div>
-          <p className="text-blue-600 text-sm font-bold tracking-widest uppercase bg-blue-50 px-4 py-1.5 rounded-full border border-blue-100">
+          <h1 className="text-4xl font-black text-gray-900 tracking-tight mb-4">HONEYCHAIN</h1>
+          <p className="text-gray-600 text-xs font-bold tracking-widest uppercase bg-gray-100 px-4 py-1.5 rounded-md border border-gray-200">
             Blockchain-Verified Traceability
           </p>
         </div>
@@ -51,13 +44,13 @@ export default function Home() {
                 onChange={(e) => setQrCode(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleVerify()}
                 placeholder="Enter QR Identifier (e.g., QR-2026-000001)" 
-                className="w-full pl-14 pr-6 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-50 focus:border-blue-500 transition-all outline-none text-gray-900 placeholder-gray-400 font-semibold shadow-sm text-lg"
+                className="w-full pl-14 pr-6 py-4 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition-all outline-none text-gray-900 placeholder-gray-500 font-semibold shadow-sm text-lg"
               />
             </div>
             <button 
               onClick={handleVerify}
               disabled={!qrCode.trim()}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-8 py-4 rounded-2xl font-bold flex items-center justify-center w-full sm:w-auto transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0"
+              className="bg-black hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-8 py-4 rounded-lg font-bold flex items-center justify-center w-full sm:w-auto transition-all shadow-md active:translate-y-0"
             >
               Verify
               <ArrowRight className="w-5 h-5 ml-2" />

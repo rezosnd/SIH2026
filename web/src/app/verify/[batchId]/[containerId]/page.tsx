@@ -65,16 +65,16 @@ export default function VerificationPage() {
   const isSuspicious = status === 'SUSPICIOUS';
   
   return (
-    <main className="min-h-screen bg-gray-50 pb-12 font-sans text-gray-900">
-      <div className="bg-white shadow-sm border-b border-gray-100">
+    <main className="min-h-screen bg-[#fafafa] pb-12 font-sans text-gray-900">
+      <div className="bg-white shadow-sm border-b border-gray-200">
          <div className="max-w-2xl mx-auto px-6 py-6 text-center flex flex-col items-center">
             <img 
               src="https://sih.gov.in/img1/SIH2026-logo.png" 
               alt="SIH 2026 Logo" 
               className="h-16 mb-4 object-contain"
             />
-            <h1 className="text-2xl font-black tracking-tight text-gray-900">HoneyChain</h1>
-            <p className="text-xs font-bold text-blue-600 mt-1 uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full border border-blue-100">Digital Honey Passport</p>
+            <h1 className="text-2xl font-black tracking-widest uppercase text-gray-900">HoneyChain</h1>
+            <p className="text-xs font-bold text-gray-600 mt-1 uppercase tracking-widest bg-gray-100 px-3 py-1 rounded-md border border-gray-200">Digital Honey Passport</p>
          </div>
       </div>
 
@@ -135,15 +135,8 @@ export default function VerificationPage() {
                  <div className="p-5 border-b border-gray-200 bg-gray-50">
                     <h3 className="font-bold text-black text-sm uppercase tracking-widest">Honey Journey</h3>
                  </div>
-                 <div className="p-8">
-                    <div className="relative border-l-2 border-gray-200 ml-4 space-y-12 py-2">
-                       
-                       <div className="relative pl-10">
-                          <div className="absolute -left-[11px] top-1 w-5 h-5 rounded-full bg-black border-4 border-white shadow-sm"></div>
-                          <p className="text-xs font-black text-gray-900 uppercase mb-1 tracking-widest">Harvested</p>
-                          <p className="text-gray-600 font-semibold text-base">Extracted from {data.hive?.location}</p>
-                          <p className="text-xs font-bold text-gray-400 mt-1.5">{new Date(data.harvestDate).toLocaleString()}</p>
-                       </div>
+                  <div className="p-8">
+                     <div className="relative border-l-2 border-gray-200 ml-4 space-y-10 py-2">
 
                        {data.events?.map((evt: any, idx: number) => (
                           <div key={idx} className="relative pl-10">
