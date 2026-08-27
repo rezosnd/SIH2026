@@ -15,7 +15,7 @@ export default function BatchVerificationPage() {
   useEffect(() => {
     async function verify() {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://sih-2026-kiit.vercel.app';
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
         // Try to record a QR scan (might fail if this is a batch QR not a container QR — that's OK)
         let scanStatus = 'VERIFIED';
