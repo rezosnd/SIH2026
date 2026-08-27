@@ -25,38 +25,48 @@ export default function AdminDashboard() {
     return () => clearInterval(interval);
   }, []);
   return (
-    <div className="min-h-screen bg-gray-50 flex font-sans text-gray-900">
+    <div className="min-h-screen bg-[#f8f9fa] flex font-sans text-gray-900">
       {/* Sidebar */}
-      <aside className="w-64 bg-black text-white min-h-screen flex flex-col border-r border-gray-800">
-        <div className="p-6 border-b border-gray-800">
-          <h1 className="text-xl font-black tracking-widest uppercase text-white">HoneyChain</h1>
-          <p className="text-xs text-gray-500 mt-2 uppercase tracking-widest font-semibold">KVIC Admin Center</p>
+      <aside className="w-72 bg-white min-h-screen flex flex-col border-r border-gray-200 shadow-[2px_0_15px_rgb(0,0,0,0.03)] z-20 relative">
+        <div className="p-8 border-b border-gray-100 text-center">
+          <img 
+            src="https://sih.gov.in/img1/SIH2026-logo.png" 
+            alt="SIH 2026 Logo" 
+            className="h-16 mx-auto mb-4 object-contain"
+          />
+          <h1 className="text-xl font-black tracking-tight text-gray-900 flex items-center justify-center">
+             <ShieldAlert className="w-5 h-5 text-blue-600 mr-2" /> HoneyChain
+          </h1>
+          <p className="text-[10px] text-blue-600 mt-2 uppercase tracking-widest font-bold bg-blue-50 py-1 rounded-full border border-blue-100">KVIC Admin Center</p>
         </div>
-        <nav className="flex-1 px-4 space-y-2 mt-6">
-          <a href="#" className="flex items-center px-4 py-3 bg-white text-black rounded-lg font-bold">
+        <nav className="flex-1 px-4 space-y-2 mt-8">
+          <a href="#" className="flex items-center px-4 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-md shadow-blue-200">
             <BarChart3 className="w-5 h-5 mr-3" /> Dashboard
           </a>
-          <a href="#" className="flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-900 rounded-lg font-semibold transition-colors">
+          <a href="#" className="flex items-center px-4 py-3 text-gray-500 hover:text-blue-700 hover:bg-blue-50 rounded-xl font-semibold transition-colors">
             <Hexagon className="w-5 h-5 mr-3" /> Supply Chain
           </a>
-          <a href="#" className="flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-900 rounded-lg font-semibold transition-colors">
+          <a href="#" className="flex items-center px-4 py-3 text-gray-500 hover:text-blue-700 hover:bg-blue-50 rounded-xl font-semibold transition-colors">
             <Users className="w-5 h-5 mr-3" /> Beekeepers
           </a>
-          <a href="#" className="flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-900 rounded-lg font-semibold transition-colors">
+          <a href="#" className="flex items-center px-4 py-3 text-gray-500 hover:text-blue-700 hover:bg-blue-50 rounded-xl font-semibold transition-colors">
             <PackageCheck className="w-5 h-5 mr-3" /> QA & Labs
           </a>
-          <a href="#" className="flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-900 rounded-lg font-semibold transition-colors mt-8">
-            <ShieldAlert className="w-5 h-5 mr-3" /> QR Security
+          <a href="#" className="flex items-center px-4 py-3 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl font-semibold transition-colors mt-8">
+            <ShieldAlert className="w-5 h-5 mr-3" /> Security Alerts
           </a>
         </nav>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-10">
-        <header className="flex justify-between items-center mb-10 pb-6 border-b border-gray-200">
+      <main className="flex-1 p-12 overflow-y-auto relative">
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-50 rounded-full blur-3xl opacity-60 -z-10 pointer-events-none"></div>
+
+        <header className="flex justify-between items-center mb-12 pb-6 border-b border-gray-200/60">
           <div>
-            <h2 className="text-2xl font-black uppercase tracking-wider text-black">System Overview</h2>
-            <p className="text-gray-500 text-sm font-medium mt-1">Real-time supply chain and security metrics.</p>
+            <h2 className="text-3xl font-black tracking-tight text-gray-900">System Overview</h2>
+            <p className="text-gray-500 text-sm font-medium mt-1">Real-time trace and security analytics.</p>
           </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -69,23 +79,23 @@ export default function AdminDashboard() {
         </header>
 
         {/* Top Metrics */}
-        <div className="grid grid-cols-4 gap-6 mb-10">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <p className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-3">Total Honey</p>
-            <p className="text-4xl font-black text-black">{stats?.totalHoneyKg ?? 0}<span className="text-xl text-gray-400 ml-1">kg</span></p>
+        <div className="grid grid-cols-4 gap-6 mb-12">
+          <div className="bg-white p-7 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-3">Total Honey</p>
+            <p className="text-4xl font-black text-gray-900">{stats?.totalHoneyKg ?? 0}<span className="text-xl text-gray-400 ml-1 font-bold">kg</span></p>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <p className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-3">Active Batches</p>
-            <p className="text-4xl font-black text-black">{stats?.activeBatches ?? 0}</p>
+          <div className="bg-white p-7 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-3">Active Batches</p>
+            <p className="text-4xl font-black text-blue-600">{stats?.activeBatches ?? 0}</p>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <p className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-3">Verified Scans</p>
-            <p className="text-4xl font-black text-black">{stats?.verifiedScans ?? 0}</p>
+          <div className="bg-white p-7 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-3">Verified Scans</p>
+            <p className="text-4xl font-black text-green-600">{stats?.verifiedScans ?? 0}</p>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-red-200 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-1 h-full bg-red-600"></div>
-            <p className="text-red-600 text-xs font-bold uppercase tracking-widest mb-3 flex items-center">
-               <AlertTriangle className="w-3.5 h-3.5 mr-1.5" /> Suspicious QR
+          <div className="bg-white p-7 rounded-2xl shadow-sm border border-red-100 hover:shadow-md transition-shadow relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-red-500"></div>
+            <p className="text-red-500 text-xs font-bold uppercase tracking-widest mb-3 flex items-center">
+               <AlertTriangle className="w-4 h-4 mr-1.5" /> Suspicious QR
             </p>
             <p className="text-4xl font-black text-red-600">{stats?.suspiciousQrs ?? 0}</p>
           </div>

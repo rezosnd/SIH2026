@@ -66,10 +66,15 @@ export default function VerificationPage() {
   
   return (
     <main className="min-h-screen bg-gray-50 pb-12 font-sans text-gray-900">
-      <div className="bg-black shadow-sm border-b border-gray-800">
-         <div className="max-w-2xl mx-auto px-6 py-6 text-center">
-            <h1 className="text-2xl font-black tracking-widest text-white uppercase">HoneyChain</h1>
-            <p className="text-xs font-bold text-gray-400 mt-1 uppercase tracking-widest">Digital Honey Passport</p>
+      <div className="bg-white shadow-sm border-b border-gray-100">
+         <div className="max-w-2xl mx-auto px-6 py-6 text-center flex flex-col items-center">
+            <img 
+              src="https://sih.gov.in/img1/SIH2026-logo.png" 
+              alt="SIH 2026 Logo" 
+              className="h-16 mb-4 object-contain"
+            />
+            <h1 className="text-2xl font-black tracking-tight text-gray-900">HoneyChain</h1>
+            <p className="text-xs font-bold text-blue-600 mt-1 uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full border border-blue-100">Digital Honey Passport</p>
          </div>
       </div>
 

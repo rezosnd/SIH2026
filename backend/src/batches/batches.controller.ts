@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException } from '@nestjs/common';
 import { BatchesService } from './batches.service';
 import { Prisma } from '@prisma/client';
 
@@ -17,8 +17,12 @@ export class BatchesController {
   }
 
   @Get('verify/:qrData')
-  verifyQR(@Param('qrData') qrData: string) {
-    return this.batchesService.verifyQR(qrData);
+  async verifyQR(@Param('qrData') qrData: string) {
+    const batch = await this.batchesService.verifyQR(qrData);
+    if (!batch) {
+      throw new NotFoundException('QR Code not found');
+    }
+    return batch;
   }
 
   @Get(':id')

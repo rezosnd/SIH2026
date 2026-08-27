@@ -42,10 +42,28 @@ export class BatchesService {
     return this.prisma.honeyBatch.update({ where: { id }, data });
   }
 
-  verifyQR(qrData: string) {
-    return this.prisma.honeyBatch.findUnique({
+  async verifyQR(qrData: string) {
+    // First try to find if this QR belongs directly to a Batch (e.g. bulk QR)
+    let batch = await this.prisma.honeyBatch.findUnique({
       where: { qrData },
       include: { events: true, qualityRecords: true, hive: { include: { beekeeper: true } } },
     });
+
+    // If not found, it might be a container (individual jar) QR
+    if (!batch) {
+      const container = await this.prisma.batchContainer.findUnique({
+        where: { qrData },
+        include: {
+          batch: {
+            include: { events: true, qualityRecords: true, hive: { include: { beekeeper: true } } }
+          }
+        }
+      });
+      if (container) {
+        batch = container.batch;
+      }
+    }
+    
+    return batch;
   }
 }
