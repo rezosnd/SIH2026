@@ -432,7 +432,7 @@ export default function App() {
         <Text style={{color: '#666', marginTop: 20}}>No QR containers generated yet. Processors create these when packaging.</Text>
       ) : (
         containers.map(c => {
-          const qrUrl = `https://sih-2026-kiit.vercel.app/verify/${c.batchId}/${c.id}`;
+          const qrUrl = `https://honey-sih-kiit.vercel.app/verify/batch/${c.qrData}`;
           return (
             <View key={c.id} style={[styles.actionCard, {height: 'auto', paddingVertical: 16, marginBottom: 16, flexDirection: 'column', alignItems: 'center'}]}>
               <View style={{ backgroundColor: '#fff', padding: 12, borderRadius: 12, marginBottom: 12 }}>

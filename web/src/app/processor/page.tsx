@@ -236,20 +236,45 @@ export default function ProcessorDashboard() {
             {containers.length > 0 && (
               <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                 {containers.map(c => {
-                  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://sih-2026-kiit.vercel.app';
-                  const qrUrl = `${baseUrl}/verify/${selectedBatch.id}/${c.id}`;
+                  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://honey-sih-kiit.vercel.app';
+                  const qrUrl = `${baseUrl}/verify/batch/${c.qrData}`;
+                  
+                  const handlePrint = () => {
+                    const svg = document.getElementById(`qr-${c.id}`);
+                    if (!svg) return;
+                    const svgData = new XMLSerializer().serializeToString(svg);
+                    const printWindow = window.open('', '', 'width=600,height=600');
+                    if (!printWindow) return;
+                    printWindow.document.write(`
+                      <html>
+                        <head><title>Print Label - ${c.qrData}</title></head>
+                        <body style="display:flex;justify-content:center;align-items:center;height:100vh;margin:0;flex-direction:column;font-family:sans-serif;">
+                          <div style="text-align:center;padding:40px;border:2px dashed #ccc;border-radius:20px;">
+                            ${svgData.replace('<svg', '<svg style="width:200px;height:200px;"')}
+                            <h2 style="margin-top:20px;font-family:monospace;letter-spacing:2px;font-size:24px;">${c.qrData}</h2>
+                            <p style="color:#666;">Size: ${c.containerSize} kg</p>
+                          </div>
+                          <script>
+                            window.onload = function() { setTimeout(() => { window.print(); window.close(); }, 500); }
+                          </script>
+                        </body>
+                      </html>
+                    `);
+                    printWindow.document.close();
+                  };
+
                   return (
                     <div key={c.id} className="flex flex-col items-center justify-center border border-gray-200 rounded-xl p-6 bg-gray-50 shadow-sm relative overflow-hidden">
                       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-orange-500"></div>
                       <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-100 mb-4">
-                        <QRCodeSVG value={qrUrl} size={140} level="H" includeMargin={false} />
+                        <QRCodeSVG id={`qr-${c.id}`} value={qrUrl} size={140} level="H" includeMargin={false} />
                       </div>
                       <div className="text-center w-full">
                         <p className="text-xs font-black uppercase tracking-widest text-gray-500 mb-1">HoneyChain Secure QR</p>
                         <p className="font-mono text-[10px] text-gray-400 break-all bg-white px-2 py-1 rounded border border-gray-200">{c.qrData}</p>
                         <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-200 w-full">
                           <span className="text-sm font-bold text-gray-900">{c.containerSize} kg</span>
-                          <button onClick={() => window.open(qrUrl, '_blank')} className="text-[10px] font-bold uppercase bg-black text-white px-3 py-1.5 rounded flex items-center gap-1 hover:bg-gray-800 transition-colors">
+                          <button onClick={handlePrint} className="text-[10px] font-bold uppercase bg-black text-white px-3 py-1.5 rounded flex items-center gap-1 hover:bg-gray-800 transition-colors">
                             <Printer className="w-3 h-3" /> Print Label
                           </button>
                         </div>

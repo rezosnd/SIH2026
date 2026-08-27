@@ -14,7 +14,7 @@ export default function KvicDashboard() {
   const [password, setPassword] = useState('');
   const [dashboard, setDashboard] = useState<any>(null);
   const [activeSection, setActiveSection] = useState('overview');
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState('');
 
