@@ -431,6 +431,10 @@ export default function App() {
         
         <View style={[styles.actionCard, { flexDirection: 'column', alignItems: 'flex-start', padding: 20 }]}>
           <Text style={{fontSize: 22, fontWeight: '900', color: '#111', marginBottom: 4}}>{hiveDetails.location.toUpperCase()}</Text>
+          <View style={{backgroundColor: '#f3f4f6', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, marginBottom: 16}}>
+            <Text style={{fontSize: 10, fontWeight: 'bold', color: '#6B6B6B', textTransform: 'uppercase', marginBottom: 2}}>DATABASE HIVE ID (For ESP32)</Text>
+            <Text selectable={true} style={{fontSize: 12, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', color: '#111', fontWeight: 'bold'}}>{hiveDetails.id}</Text>
+          </View>
           <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 16}}>
             <View style={{width: 8, height: 8, borderRadius: 4, backgroundColor: hiveDetails.device?.status === 'ONLINE' ? '#10B981' : '#EF4444', marginRight: 6}} />
             <Text style={{fontWeight: 'bold', color: hiveDetails.device?.status === 'ONLINE' ? '#10B981' : '#EF4444'}}>{hiveDetails.device?.status || 'OFFLINE'}</Text>

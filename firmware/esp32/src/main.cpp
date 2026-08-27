@@ -1,5 +1,5 @@
 #include <WiFi.h>
-#include <PubSubClient.h>
+#include <HTTPClient.h>
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BMP085.h> // BMP180 library
@@ -32,22 +32,20 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 // float CALIBRATION_FACTOR = 420.5; 
 
 // -----------------------------------------
-// DEVICE IDENTITY
+// DEVICE IDENTITY & BACKEND
 // -----------------------------------------
 const char* DEVICE_ID = "ESP32-HIVE-0001";
 const char* HIVE_ID = "HIVE-2026-0001";
-const char* FIRMWARE_VERSION = "1.0.0";
+
+// Change this to your deployed backend URL (e.g., https://your-app.vercel.app)
+// For local testing on the same WiFi network, use your computer's IP address (e.g., http://192.168.1.5:3001)
+const char* API_URL = "http://YOUR_BACKEND_IP_OR_URL:3001"; 
 
 // -----------------------------------------
 // NETWORK CONFIGURATION
 // -----------------------------------------
 const char* ssid = "YOUR_WIFI_SSID";
 const char* password = "YOUR_WIFI_PASSWORD";
-const char* mqtt_server = "broker.hivemq.com"; // Replace with your production MQTT broker
-const int mqtt_port = 1883;
-
-WiFiClient espClient;
-PubSubClient client(espClient);
 
 unsigned long lastMsg = 0;
 #define TELEMETRY_INTERVAL_MS 10000 // 10 seconds
@@ -65,36 +63,8 @@ void setup_wifi() {
     Serial.print(".");
   }
   Serial.println("\nWiFi connected");
-}
-
-void reconnect() {
-  while (!client.connected()) {
-    Serial.print("Attempting MQTT connection...");
-    if (client.connect(DEVICE_ID)) {
-      Serial.println("connected");
-      // Publish heartbeat immediately on reconnect
-      publishHeartbeat();
-    } else {
-      Serial.print("failed, rc=");
-      Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
-      delay(5000);
-    }
-  }
-}
-
-void publishHeartbeat() {
-  StaticJsonDocument<200> doc;
-  doc["deviceId"] = DEVICE_ID;
-  doc["hiveId"] = HIVE_ID;
-  doc["status"] = "ONLINE";
-  doc["firmwareVersion"] = FIRMWARE_VERSION;
-  
-  char buffer[200];
-  serializeJson(doc, buffer);
-  
-  String topic = String("honeychain/hives/") + HIVE_ID + "/status";
-  client.publish(topic.c_str(), buffer);
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
 }
 
 void setup() {
@@ -123,14 +93,17 @@ void setup() {
   // scale.set_scale(CALIBRATION_FACTOR);
 
   setup_wifi();
-  client.setServer(mqtt_server, mqtt_port);
 }
 
 void loop() {
-  if (!client.connected()) {
-    reconnect();
+  // Reconnect WiFi if lost
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("WiFi lost, reconnecting...");
+    WiFi.disconnect();
+    WiFi.reconnect();
+    delay(2000);
+    return;
   }
-  client.loop();
 
   unsigned long now = millis();
   
@@ -141,7 +114,7 @@ void loop() {
     currentScreen = (currentScreen + 1) % 5;
   }
 
-  // Publish telemetry every TELEMETRY_INTERVAL_MS
+  // Send telemetry via HTTP POST every TELEMETRY_INTERVAL_MS
   if (now - lastMsg > TELEMETRY_INTERVAL_MS) {
     lastMsg = now;
     
@@ -180,10 +153,25 @@ void loop() {
     
     char buffer[500];
     serializeJson(doc, buffer);
-    String topic = String("honeychain/hives/") + HIVE_ID + "/telemetry";
-    client.publish(topic.c_str(), buffer);
+
+    // Make HTTP POST Request
+    HTTPClient http;
+    String url = String(API_URL) + "/iot/hives/" + HIVE_ID + "/telemetry";
     
-    Serial.println("[MQTT] Telemetry published seq: " + String(sequence));
+    http.begin(url);
+    http.addHeader("Content-Type", "application/json");
+    
+    Serial.println("[HTTP] Sending Telemetry to: " + url);
+    int httpResponseCode = http.POST(buffer);
+    
+    if (httpResponseCode > 0) {
+      Serial.print("[HTTP] Response code: ");
+      Serial.println(httpResponseCode);
+    } else {
+      Serial.print("[HTTP] Error code: ");
+      Serial.println(httpResponseCode);
+    }
+    http.end();
   }
 }
 
@@ -214,8 +202,8 @@ void updateDisplay() {
     case 3: // Device
       display.println("DEVICE");
       display.println(String(DEVICE_ID));
-      display.println("MQTT: CONNECTED");
-      display.println("WIFI: CONNECTED");
+      display.println("NETWORK: CONNECTED");
+      display.print("IP: "); display.println(WiFi.localIP().toString());
       break;
     case 4: // Health
       display.print("DHT11:  "); display.println(isnan(t) ? "ERROR" : "OK");
