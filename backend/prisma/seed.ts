@@ -99,7 +99,7 @@ async function main() {
     data: {
       beekeeperId: beekeeperUser.beekeeperProfile!.id,
       hiveId: hive1.id,
-      status: 'PACKAGED',
+      status: 'HARVESTED',
       quantity: 50, // 50kg
       qrData: 'HNY-2026-0001',
       txHash: '0x99a98... (Simulated)',

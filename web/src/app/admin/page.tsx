@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { ShieldAlert, Users, Hexagon, BarChart3, Activity, PackageCheck, AlertTriangle, Bell, ChevronRight, CheckCircle, XCircle, Eye } from 'lucide-react';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://10.170.214.1:4000';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://sih-2026-kiit-1c9fdv5nf-rehan-sumans-projects.vercel.app';
 
 async function getToken(role = 'ADMIN') {
   const r = await fetch(`${API}/auth/dev-login?role=${role}`);
@@ -11,6 +11,8 @@ async function getToken(role = 'ADMIN') {
 }
 
 export default function AdminDashboard() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState('');
   const [stats, setStats] = useState<any>(null);
   const [secMetrics, setSecMetrics] = useState<any>(null);
   const [alerts, setAlerts] = useState<any[]>([]);
@@ -103,6 +105,32 @@ export default function AdminDashboard() {
     };
     return <span className={`text-xs font-bold px-2 py-0.5 rounded border ${map[s] || 'bg-gray-100 text-gray-600'}`}>{s.replace('_', ' ')}</span>;
   };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#f3f4f6] flex items-center justify-center font-sans">
+        <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm text-center">
+          <div className="flex justify-center mb-4"><ShieldAlert className="w-12 h-12 text-gray-900" /></div>
+          <h1 className="text-xl font-black uppercase tracking-widest text-gray-900 mb-2">HoneyChain Admin</h1>
+          <p className="text-xs text-gray-500 mb-6 font-semibold">Enter your secure password to continue</p>
+          <input 
+            type="password" 
+            value={password} 
+            onChange={e => setPassword(e.target.value)}
+            placeholder="Password"
+            className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900 mb-4 text-center font-mono"
+            onKeyDown={e => e.key === 'Enter' && password === 'password123' && setIsAuthenticated(true)}
+          />
+          <button 
+            onClick={() => password === 'password123' && setIsAuthenticated(true)}
+            className="w-full bg-gray-900 text-white font-bold py-3 rounded-lg hover:bg-black transition-colors"
+          >
+            LOGIN
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f3f4f6] flex font-sans text-gray-900">
