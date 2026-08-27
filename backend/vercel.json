@@ -1,15 +1,14 @@
 {
   "version": 2,
-  "buildCommand": "echo 'Skipping build, using pre-built dist folder'",
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/api/index.js"
+      "destination": "/api/index.ts"
     }
   ],
   "functions": {
-    "api/index.js": {
-      "includeFiles": "dist/**"
+    "api/index.ts": {
+      "memory": 1024
     }
   }
 }
