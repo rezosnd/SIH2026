@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from 'react';
-import { BarChart3, Users, Hexagon, Package, ShieldAlert, Activity, AlertTriangle, ChevronRight, TrendingUp } from 'lucide-react';
+import { BarChart3, Users, Hexagon, Package, ShieldAlert, Activity, AlertTriangle, ChevronRight, TrendingUp, XCircle, Plus } from 'lucide-react';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://backend-eight-jade-26.vercel.app';
 
@@ -17,6 +17,9 @@ export default function KvicDashboard() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState('');
+
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newBk, setNewBk] = useState({ name: '', email: '', password: '', farmLocation: '', contact: '' });
 
   useEffect(() => {
     (async () => {
@@ -45,6 +48,34 @@ export default function KvicDashboard() {
     setLoading(true);
     fetch(`${API}${ep}`, { headers }).then(r => r.json()).then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false));
   }, [activeSection, token]);
+
+  const handleAddBeekeeper = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`${API}/kvic/beekeepers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(newBk),
+      });
+      if (res.ok) {
+        setShowAddModal(false);
+        setNewBk({ name: '', email: '', password: '', farmLocation: '', contact: '' });
+        // Refresh beekeepers
+        fetch(`${API}/kvic/beekeepers`, { headers: { Authorization: `Bearer ${token}` } })
+          .then(r => r.json())
+          .then(d => setData(d));
+      } else {
+        alert('Failed to add beekeeper');
+      }
+    } catch (err) {
+      alert('Error adding beekeeper');
+    }
+  };
+
+  const handleLogout = () => {
+    // In a real app, clear cookies/tokens
+    window.location.href = '/';
+  };
 
   const NavItem = ({ id, icon: Icon, label }: any) => (
     <button
@@ -82,10 +113,13 @@ export default function KvicDashboard() {
           <NavItem id="qr" icon={TrendingUp} label="QR Activity" />
           <NavItem id="security" icon={ShieldAlert} label="Security Alerts" />
         </nav>
-        <div className="p-4 border-t border-gray-100">
-          <a href="/admin" className="flex items-center px-4 py-2 text-gray-500 hover:text-black text-sm font-semibold">
+        <div className="p-4 border-t border-gray-100 flex flex-col gap-2">
+          <a href="/admin" className="flex items-center px-4 py-2 text-gray-500 hover:text-black text-sm font-semibold transition-colors">
             <ShieldAlert className="w-4 h-4 mr-2" /> Admin View
           </a>
+          <button onClick={handleLogout} className="flex items-center px-4 py-2 text-red-500 hover:bg-red-50 rounded-md text-sm font-semibold transition-colors w-full text-left">
+            <XCircle className="w-4 h-4 mr-2" /> Logout
+          </button>
         </div>
       </aside>
 
@@ -136,8 +170,21 @@ export default function KvicDashboard() {
           )}
 
           {activeSection === 'beekeepers' && !loading && (
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-              <table className="w-full text-sm">
+            <div className="space-y-4">
+              <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                <div>
+                  <h2 className="font-bold text-lg">Registered Beekeepers</h2>
+                  <p className="text-gray-500 text-xs">Manage beekeepers across all clusters</p>
+                </div>
+                <button 
+                  onClick={() => setShowAddModal(true)}
+                  className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center hover:bg-black transition-colors"
+                >
+                  <Plus className="w-4 h-4 mr-2" /> Add Beekeeper
+                </button>
+              </div>
+              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                <table className="w-full text-sm">
                 <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
                     {['Name', 'Farm Location', 'Cluster', 'Hives', 'Batches', 'Contact'].map(h => (
@@ -161,6 +208,7 @@ export default function KvicDashboard() {
                 </tbody>
               </table>
             </div>
+          </div>
           )}
 
           {activeSection === 'hives' && !loading && (
@@ -283,6 +331,44 @@ export default function KvicDashboard() {
           )}
         </div>
       </main>
+
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+              <h2 className="font-bold">Add Beekeeper</h2>
+              <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-black">
+                <XCircle className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleAddBeekeeper} className="p-5 space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">Name</label>
+                <input required type="text" value={newBk.name} onChange={e => setNewBk({...newBk, name: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-black" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">Email</label>
+                <input required type="email" value={newBk.email} onChange={e => setNewBk({...newBk, email: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-black" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">Password</label>
+                <input required type="password" value={newBk.password} onChange={e => setNewBk({...newBk, password: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-black" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">Farm Location</label>
+                <input required type="text" value={newBk.farmLocation} onChange={e => setNewBk({...newBk, farmLocation: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-black" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">Contact (Optional)</label>
+                <input type="text" value={newBk.contact} onChange={e => setNewBk({...newBk, contact: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-black" />
+              </div>
+              <button type="submit" className="w-full bg-gray-900 text-white font-bold py-2 rounded-md hover:bg-black transition-colors mt-4">
+                Register Beekeeper
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

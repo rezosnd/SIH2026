@@ -64,4 +64,24 @@ export class KvicService {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  async createBeekeeper(data: any) {
+    const cluster = await this.prisma.cluster.findFirst();
+    return this.prisma.user.create({
+      data: {
+        email: data.email,
+        password: data.password || 'password123',
+        role: 'BEEKEEPER',
+        clusterId: cluster?.id,
+        beekeeperProfile: {
+          create: {
+            name: data.name,
+            farmLocation: data.farmLocation,
+            contact: data.contact,
+          }
+        }
+      },
+      include: { beekeeperProfile: true }
+    });
+  }
 }

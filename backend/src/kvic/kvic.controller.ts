@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
 import { KvicService } from './kvic.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -30,4 +30,9 @@ export class KvicController {
 
   @Get('security-alerts')
   getSecurityAlerts() { return this.kvicService.getSecurityAlerts(); }
+
+  @Post('beekeepers')
+  createBeekeeper(@Body() body: any) {
+    return this.kvicService.createBeekeeper(body);
+  }
 }
