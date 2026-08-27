@@ -30,8 +30,9 @@ export default function BatchVerificationPage() {
         const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
         if (geoRes.ok) {
           const geoData = await geoRes.json();
+          const resolvedCity = geoData.city || geoData.locality || geoData.principalSubdivision || geoData.countryName || 'Unknown Location';
           locationPayload = {
-            city: geoData.city || geoData.locality,
+            city: resolvedCity,
             state: geoData.principalSubdivision,
             country: geoData.countryName,
           };
