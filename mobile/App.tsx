@@ -81,6 +81,41 @@ export default function App() {
     </View>
   );
 
+  const translations = {
+    'English': {
+      activeHives: 'ACTIVE HIVES', harvested: 'HARVESTED', activeBatches: 'ACTIVE BATCHES', alerts: 'QR ALERTS',
+      hiveStatus: 'HIVE STATUS', allOps: 'All systems operational', quickActions: 'QUICK ACTIONS',
+      createBatch: 'Create Honey Batch', createBatchDesc: 'Record a new harvest',
+      manageHives: 'Manage Hives', manageHivesDesc: 'Register or update hive status',
+      viewQr: 'View QR Codes', viewQrDesc: 'See containers and QR labels', welcome: 'Welcome back,'
+    },
+    'हिंदी (Hindi)': {
+      activeHives: 'सक्रिय छत्ते', harvested: 'काटा गया', activeBatches: 'सक्रिय बैच', alerts: 'अलर्ट',
+      hiveStatus: 'छत्ते की स्थिति', allOps: 'सभी सिस्टम ठीक हैं', quickActions: 'त्वरित कार्य',
+      createBatch: 'नया बैच बनाएं', createBatchDesc: 'नई फसल दर्ज करें',
+      manageHives: 'छत्ते प्रबंधित करें', manageHivesDesc: 'पंजीकृत या अपडेट करें',
+      viewQr: 'क्यूआर कोड देखें', viewQrDesc: 'कंटेनर और लेबल देखें', welcome: 'वापसी पर स्वागत है,'
+    },
+    'मैथिली (Maithili)': {
+      activeHives: 'सक्रिय महुरा', harvested: 'कटल गेल', activeBatches: 'सक्रिय बैच', alerts: 'अलर्ट',
+      hiveStatus: 'महुरा के स्थिति', allOps: 'सब काज क रहल अछि', quickActions: 'त्वरित काज',
+      createBatch: 'मधु बैच बनाउ', createBatchDesc: 'नया फसल दर्ज करू',
+      manageHives: 'महुरा प्रबंधित करू', manageHivesDesc: 'पंजीकृत करू',
+      viewQr: 'क्यूआर कोड देखू', viewQrDesc: 'कंटेनर आ लेबल देखू', welcome: 'स्वागत अछि,'
+    },
+    'ଓଡ଼ିଆ (Odia)': {
+      activeHives: 'ସକ୍ରିୟ ବାକ୍ସ', harvested: 'ଅମଳ', activeBatches: 'ସକ୍ରିୟ ବ୍ୟାଚ୍', alerts: 'ଆଲର୍ଟ',
+      hiveStatus: 'ବାକ୍ସ ସ୍ଥିତି', allOps: 'ସମସ୍ତ ସିଷ୍ଟମ୍ ଠିକ୍', quickActions: 'ତ୍ୱରିତ କାର୍ଯ୍ୟ',
+      createBatch: 'ବ୍ୟାଚ୍ ତିଆରି', createBatchDesc: 'ନୂଆ ଅମଳ ରେକର୍ଡ',
+      manageHives: 'ବାକ୍ସ ପରିଚାଳନା', manageHivesDesc: 'ପଞ୍ଜିକରଣ କରନ୍ତୁ',
+      viewQr: 'QR କୋଡ୍ ଦେଖନ୍ତୁ', viewQrDesc: 'କଣ୍ଟେନର ଏବଂ ଲେବଲ୍', welcome: 'ସ୍ଵାଗତମ୍,'
+    }
+  };
+  
+  const t = (key: keyof typeof translations['English']) => {
+    return (translations as any)[language]?.[key] || translations['English'][key];
+  };
+
   const TopControls = ({ isDark = false }: { isDark?: boolean }) => (
     <View style={styles.topControls}>
       <TouchableOpacity style={styles.iconButton}>
@@ -108,14 +143,7 @@ export default function App() {
   const MobileHero = () => (
     <View style={styles.heroSection}>
       <HoneycombBackground />
-      
-      {/* Colorful Beehive Image (No dark overlays!) */}
-      <Image 
-        source={require('./assets/beehouse.png')} 
-        style={styles.heroImage}
-        resizeMode="contain"
-      />
-      
+      <Image source={require('./assets/beehouse.png')} style={styles.heroImage} resizeMode="contain" />
       <View style={styles.heroTop}>
         <TouchableOpacity style={styles.iconButton}>
           <Activity size={24} color="#fff" strokeWidth={2} />
@@ -124,15 +152,14 @@ export default function App() {
         <TopControls />
       </View>
       <View style={styles.heroWelcome}>
-        <Text style={styles.welcomeText}>Welcome back,</Text>
+        <Text style={styles.welcomeText}>{t('welcome')}</Text>
         <Text style={styles.welcomeName}>{loading ? '...' : (data?.name || 'Beekeeper')}</Text>
-        <Text style={styles.welcomeDesc}>Here's what's happening with your hives.</Text>
       </View>
     </View>
   );
 
-  const StatCard = ({ title, value, unit, IconComponent, alert }: { title: string, value: any, unit?: string, IconComponent: any, alert?: boolean }) => (
-    <TouchableOpacity style={[styles.statCard, isLargeScreen && styles.statCardDesktop]} activeOpacity={0.7}>
+  const StatCard = ({ title, value, unit, IconComponent, alert, onPress }: { title: string, value: any, unit?: string, IconComponent: any, alert?: boolean, onPress?: () => void }) => (
+    <TouchableOpacity style={[styles.statCard, isLargeScreen && styles.statCardDesktop]} activeOpacity={0.7} onPress={onPress}>
       <View style={styles.statHeader}>
         <View style={[styles.statIconWrapper, alert && { backgroundColor: '#FFF5F5' }]}>
           <IconComponent size={24} color={alert ? "#E60000" : "#111111"} strokeWidth={2} />
@@ -144,9 +171,7 @@ export default function App() {
           <View style={styles.skeletonBlock} />
         ) : (
           <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
-            <Text style={[styles.statValue, alert && value > 0 && { color: '#E60000' }]}>
-              {value ?? 0}
-            </Text>
+            <Text style={[styles.statValue, alert && value > 0 && { color: '#E60000' }]}>{value ?? 0}</Text>
             {unit && <Text style={styles.statUnit}>{unit}</Text>}
           </View>
         )}
@@ -170,10 +195,10 @@ export default function App() {
 
   const HiveStatus = () => (
     <View style={styles.statusContainer}>
-      <Text style={styles.statusSectionTitle}>HIVE STATUS</Text>
+      <Text style={styles.statusSectionTitle}>{t('hiveStatus')}</Text>
       <View style={styles.statusCard}>
         <View style={styles.statusDot} />
-        <Text style={styles.statusText}>All systems operational</Text>
+        <Text style={styles.statusText}>{t('allOps')}</Text>
       </View>
     </View>
   );
@@ -181,20 +206,17 @@ export default function App() {
   const DashboardContent = () => (
     <View style={styles.contentArea}>
       <View style={styles.statsGrid}>
-        <StatCard title="ACTIVE HIVES" value={data?.activeHives} IconComponent={BeehiveIcon} />
-        <StatCard title="HARVESTED" value={data?.totalHarvested} unit="kg" IconComponent={HoneyJarIcon} />
-        <StatCard title="ACTIVE BATCHES" value={data?.activeBatches} IconComponent={Package} />
-        <StatCard title="QR ALERTS" value={data?.alerts} alert={data?.alerts > 0} IconComponent={QrCode} />
+        <StatCard title={t('activeHives')} value={data?.activeHives} IconComponent={BeehiveIcon} onPress={() => setActiveTab('Hives')} />
+        <StatCard title={t('harvested')} value={data?.totalHarvested} unit="kg" IconComponent={HoneyJarIcon} />
+        <StatCard title={t('activeBatches')} value={data?.activeBatches} IconComponent={Package} onPress={() => setActiveTab('Batches')} />
+        <StatCard title={t('alerts')} value={data?.alerts} alert={data?.alerts > 0} IconComponent={QrCode} onPress={() => setActiveTab('Alerts')} />
       </View>
-
       <HiveStatus />
-
-      <Text style={styles.sectionTitle}>QUICK ACTIONS</Text>
-
+      <Text style={styles.sectionTitle}>{t('quickActions')}</Text>
       <View style={styles.actionsGrid}>
-        <ActionCard title="Create Honey Batch" desc="Record a new harvest" IconComponent={PackagePlus} onPress={() => setActiveTab('CreateBatch')} />
-        <ActionCard title="Manage Hives" desc="Register or update hive status" IconComponent={BeehiveIcon} onPress={() => setActiveTab('Hives')} />
-        <ActionCard title="View QR Codes" desc="See containers and QR labels" IconComponent={QrCode} onPress={() => setActiveTab('Containers')} />
+        <ActionCard title={t('createBatch')} desc={t('createBatchDesc')} IconComponent={PackagePlus} onPress={() => setActiveTab('CreateBatch')} />
+        <ActionCard title={t('manageHives')} desc={t('manageHivesDesc')} IconComponent={BeehiveIcon} onPress={() => setActiveTab('Hives')} />
+        <ActionCard title={t('viewQr')} desc={t('viewQrDesc')} IconComponent={QrCode} onPress={() => setActiveTab('Containers')} />
       </View>
     </View>
   );
@@ -203,6 +225,9 @@ export default function App() {
   const [hives, setHives] = useState<any[]>([]);
   const [batches, setBatches] = useState<any[]>([]);
   const [containers, setContainers] = useState<any[]>([]);
+  const [language, setLanguage] = useState('English');
+
+  const availableLanguages = ['English', 'हिंदी (Hindi)', 'मैथिली (Maithili)', 'ଓଡ଼ିଆ (Odia)', 'বাংলা (Bengali)'];
 
   // Form states
   const [hiveLocation, setHiveLocation] = useState('');
@@ -448,6 +473,49 @@ export default function App() {
     </View>
   );
 
+  const AlertsContent = () => (
+    <View style={styles.contentArea}>
+      <Text style={styles.sectionTitle}>MY ALERTS</Text>
+      <Text style={{color: '#666', marginTop: 20}}>You have 0 active alerts right now. All clear!</Text>
+    </View>
+  );
+
+  const ProfileContent = () => (
+    <View style={styles.contentArea}>
+      <Text style={styles.sectionTitle}>MY PROFILE</Text>
+      <View style={[styles.actionCard, {height: 'auto', paddingVertical: 24, flexDirection: 'column', alignItems: 'center', marginBottom: 16}]}>
+        <View style={{width: 80, height: 80, borderRadius: 40, backgroundColor: '#111', justifyContent: 'center', alignItems: 'center', marginBottom: 16}}>
+          <User size={40} color="#fff" />
+        </View>
+        <Text style={[styles.actionTitle, {fontSize: 20}]}>{data?.name || 'Beekeeper'}</Text>
+        <Text style={[styles.actionDesc, {marginTop: 4}]}>{data?.cluster || 'Unknown Cluster'}</Text>
+      </View>
+
+      <Text style={styles.sectionTitle}>PREFERENCES</Text>
+      <View style={[styles.actionCard, {height: 'auto', paddingVertical: 16, flexDirection: 'column', marginBottom: 16}]}>
+        <Text style={[styles.actionTitle, {marginBottom: 12}]}>App Language</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{width: '100%'}}>
+          {availableLanguages.map(lang => (
+            <TouchableOpacity 
+              key={lang} 
+              style={[
+                {paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: '#eee', marginRight: 8},
+                language === lang && {backgroundColor: '#111', borderColor: '#111'}
+              ]}
+              onPress={() => setLanguage(lang)}
+            >
+              <Text style={[{color: '#666'}, language === lang && {color: '#fff', fontWeight: 'bold'}]}>{lang}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+      <TouchableOpacity style={[styles.primaryButton, {marginTop: 8, width: '100%', backgroundColor: '#FF3B30'}]} onPress={() => setToken(null)}>
+        <Text style={styles.primaryButtonText}>Sign Out</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   const MobileBottomNav = () => (
     <View style={styles.bottomNav}>
       <TouchableOpacity style={activeTab === 'Dashboard' ? styles.navItemActive : styles.navItem} onPress={() => setActiveTab('Dashboard')}>
@@ -526,27 +594,8 @@ export default function App() {
                 {activeTab === 'Batches' && <BatchesContent />}
                 {activeTab === 'CreateBatch' && <CreateBatchContent />}
                 {activeTab === 'Containers' && <ContainersContent />}
-                {activeTab === 'Alerts' && (
-                  <View style={styles.contentArea}>
-                    <Text style={styles.sectionTitle}>MY ALERTS</Text>
-                    <Text style={{color: '#666', marginTop: 20}}>You have 0 active alerts right now. All clear!</Text>
-                  </View>
-                )}
-                {activeTab === 'Profile' && (
-                  <View style={styles.contentArea}>
-                    <Text style={styles.sectionTitle}>MY PROFILE</Text>
-                    <View style={[styles.actionCard, {height: 'auto', paddingVertical: 24, flexDirection: 'column', alignItems: 'center'}]}>
-                      <View style={{width: 80, height: 80, borderRadius: 40, backgroundColor: '#111', justifyContent: 'center', alignItems: 'center', marginBottom: 16}}>
-                        <User size={40} color="#fff" />
-                      </View>
-                      <Text style={[styles.actionTitle, {fontSize: 20}]}>{data?.name || 'Beekeeper'}</Text>
-                      <Text style={[styles.actionDesc, {marginTop: 4}]}>{data?.cluster || 'Unknown Cluster'}</Text>
-                      <TouchableOpacity style={[styles.primaryButton, {marginTop: 24, width: '100%'}]} onPress={() => setToken(null)}>
-                        <Text style={styles.primaryButtonText}>Sign Out</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                )}
+                {activeTab === 'Alerts' && <AlertsContent />}
+                {activeTab === 'Profile' && <ProfileContent />}
               </ScrollView>
             </View>
           </View>
@@ -561,31 +610,8 @@ export default function App() {
                 {activeTab === 'Batches' && <BatchesContent />}
                 {activeTab === 'CreateBatch' && <CreateBatchContent />}
                 {activeTab === 'Containers' && <ContainersContent />}
-                {activeTab === 'Alerts' && (
-                  <View style={styles.contentArea}>
-                    <Text style={styles.sectionTitle}>MY ALERTS</Text>
-                    <Text style={{color: '#666', marginTop: 20}}>You have 0 active alerts right now. All clear!</Text>
-                  </View>
-                )}
-                {activeTab === 'Profile' && (
-                  <View style={styles.contentArea}>
-                    <Text style={styles.sectionTitle}>MY PROFILE</Text>
-                    <View style={[styles.actionCard, {height: 'auto', paddingVertical: 24, flexDirection: 'column', alignItems: 'center'}]}>
-                      <View style={{width: 80, height: 80, borderRadius: 40, backgroundColor: '#111', justifyContent: 'center', alignItems: 'center', marginBottom: 16}}>
-                        <User size={40} color="#fff" />
-                      </View>
-                      <Text style={[styles.actionTitle, {fontSize: 20}]}>{data?.name || 'Beekeeper'}</Text>
-                      <Text style={[styles.actionDesc, {marginTop: 4}]}>{data?.cluster || 'Unknown Cluster'}</Text>
-                      
-                      <TouchableOpacity 
-                        style={[styles.primaryButton, {marginTop: 24, width: '100%'}]} 
-                        onPress={() => setToken(null)}
-                      >
-                        <Text style={styles.primaryButtonText}>Sign Out</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                )}
+                {activeTab === 'Alerts' && <AlertsContent />}
+                {activeTab === 'Profile' && <ProfileContent />}
               </View>
             </ScrollView>
             <MobileBottomNav />
