@@ -82,6 +82,7 @@ model Hive {
   status           HiveStatus       @default(ACTIVE)
   registrationDate DateTime         @default(now())
   batches          HoneyBatch[]
+  device           IoTDevice?
 }
 
 model HoneyBatch {
@@ -210,3 +211,54 @@ model SecurityAlert {
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
 }
+
+
+model IoTDevice {
+  id              String           @id @default(uuid())
+  deviceId        String           @unique
+  hiveId          String           @unique
+  hive            Hive             @relation(fields: [hiveId], references: [id], onDelete: Cascade)
+  status          String           @default("OFFLINE") // ONLINE, OFFLINE
+  firmwareVersion String?
+  lastSeenAt      DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  readings        SensorReading[]
+  alerts          HiveAlert[]
+}
+
+model SensorReading {
+  id              String           @id @default(uuid())
+  deviceId        String
+  device          IoTDevice        @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
+  hiveId          String
+  timestamp       DateTime         @default(now())
+  
+  temperature     Float?
+  humidity        Float?
+  pressure        Float?
+  rain            Boolean?
+  uv              Float?
+  weight          Float?
+  lm393Value      Float?
+  
+  createdAt       DateTime         @default(now())
+  
+  @@index([hiveId, timestamp])
+  @@index([deviceId, timestamp])
+}
+
+model HiveAlert {
+  id              String           @id @default(uuid())
+  hiveId          String
+  deviceId        String?
+  device          IoTDevice?       @relation(fields: [deviceId], references: [deviceId], onDelete: SetNull)
+  type            String           // e.g. HIGH_TEMPERATURE, SENSOR_OFFLINE
+  severity        String           @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
+  message         String
+  metadata        String?
+  status          String           @default("OPEN") // OPEN, RESOLVED
+  resolvedAt      DateTime?
+  createdAt       DateTime         @default(now())
+}
+

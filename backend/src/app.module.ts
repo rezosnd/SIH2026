@@ -14,6 +14,7 @@ import { AdminModule } from './admin/admin.module';
 import { BeekeepersModule } from './beekeepers/beekeepers.module';
 import { ProcessorModule } from './processor/processor.module';
 import { KvicModule } from './kvic/kvic.module';
+import { IoTModule } from './iot/iot.module';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { KvicModule } from './kvic/kvic.module';
       ttl: 60000,
       limit: 100, // 100 requests per minute by default
     }]),
-    PrismaModule, AuthModule, UsersModule, HivesModule, BatchesModule, QrModule, BlockchainModule, AdminModule, BeekeepersModule, ProcessorModule, KvicModule
+    PrismaModule, AuthModule, UsersModule, HivesModule, BatchesModule, QrModule, BlockchainModule, AdminModule, BeekeepersModule, ProcessorModule, KvicModule, IoTModule
   ],
   controllers: [AppController],
   providers: [

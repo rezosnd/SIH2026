@@ -345,14 +345,25 @@ export default function App() {
         <Text style={{color: '#666', marginTop: 20}}>No hives found.</Text>
       ) : (
         hives.map(hive => (
-          <View key={hive.id} style={styles.actionCard}>
-            <View style={styles.actionIconWrapperDark}>
-              <BeehiveIcon size={24} color="#FFFFFF" strokeWidth={2} />
+          <View key={hive.id} style={[styles.actionCard, { flexDirection: 'column', alignItems: 'stretch' }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+              <View style={styles.actionIconWrapperDark}>
+                <BeehiveIcon size={24} color="#FFFFFF" strokeWidth={2} />
+              </View>
+              <View style={styles.actionTextWrapper}>
+                <Text style={styles.actionTitle}>{hive.location}</Text>
+                <Text style={styles.actionDesc}>Status: {hive.status}</Text>
+              </View>
             </View>
-            <View style={styles.actionTextWrapper}>
-              <Text style={styles.actionTitle}>{hive.location}</Text>
-              <Text style={styles.actionDesc}>Status: {hive.status}</Text>
-            </View>
+            <TouchableOpacity 
+              style={[styles.secondaryButton, { marginTop: 0 }]} 
+              onPress={() => {
+                setSelectedHiveId(hive.id);
+                setActiveTab('HiveDetails');
+              }}
+            >
+              <Text style={styles.secondaryButtonText}>VIEW DETAILS</Text>
+            </TouchableOpacity>
           </View>
         ))
       )}
@@ -386,6 +397,105 @@ export default function App() {
       </View>
     </View>
   );
+
+  const [hiveDetails, setHiveDetails] = useState<any>(null);
+
+  useEffect(() => {
+    if (activeTab === 'HiveDetails' && selectedHiveId) {
+      setHiveDetails(null);
+      fetch(`${API}/iot/hives/${selectedHiveId}`, { headers: getAuthHeaders(token!) })
+        .then(r => r.json())
+        .then(d => setHiveDetails(d))
+        .catch(e => console.error(e));
+    }
+  }, [activeTab, selectedHiveId, token]);
+
+  const HiveDetailsContent = () => {
+    if (!hiveDetails) return <View style={styles.contentArea}><ActivityIndicator size="large" color="#111" style={{marginTop: 50}} /></View>;
+    return (
+      <View style={styles.contentArea}>
+        <TouchableOpacity onPress={() => setActiveTab('Hives')} style={{marginBottom: 16}}>
+          <Text style={{color: '#666', fontWeight: 'bold'}}>← Back to Hives</Text>
+        </TouchableOpacity>
+        
+        <View style={[styles.actionCard, { flexDirection: 'column', alignItems: 'flex-start', padding: 20 }]}>
+          <Text style={{fontSize: 22, fontWeight: '900', color: '#111', marginBottom: 4}}>{hiveDetails.location.toUpperCase()}</Text>
+          <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 16}}>
+            <View style={{width: 8, height: 8, borderRadius: 4, backgroundColor: hiveDetails.device?.status === 'ONLINE' ? '#10B981' : '#EF4444', marginRight: 6}} />
+            <Text style={{fontWeight: 'bold', color: hiveDetails.device?.status === 'ONLINE' ? '#10B981' : '#EF4444'}}>{hiveDetails.device?.status || 'OFFLINE'}</Text>
+            <Text style={{marginLeft: 8, fontSize: 12, color: '#9ca3af', fontWeight: 'bold'}}>{hiveDetails.device?.deviceId || 'NO DEVICE'}</Text>
+          </View>
+          <Text style={{fontSize: 12, color: '#666', marginBottom: 2}}>Last updated: {hiveDetails.current?.timestamp ? new Date(hiveDetails.current.timestamp).toLocaleString() : 'Never'}</Text>
+        </View>
+
+        <Text style={styles.sectionTitle}>CURRENT CONDITIONS</Text>
+        <View style={{flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between'}}>
+          <View style={[styles.statCardDesktop, {width: '48%', marginBottom: 12}]}>
+            <Text style={styles.statTitle}>Temperature</Text>
+            <Text style={styles.statValue}>{hiveDetails.current?.temperature ? `${hiveDetails.current.temperature} °C` : 'N/A'}</Text>
+          </View>
+          <View style={[styles.statCardDesktop, {width: '48%', marginBottom: 12}]}>
+            <Text style={styles.statTitle}>Humidity</Text>
+            <Text style={styles.statValue}>{hiveDetails.current?.humidity ? `${hiveDetails.current.humidity} %` : 'N/A'}</Text>
+          </View>
+          <View style={[styles.statCardDesktop, {width: '48%', marginBottom: 12}]}>
+            <Text style={styles.statTitle}>Pressure</Text>
+            <Text style={styles.statValue}>{hiveDetails.current?.pressure ? `${hiveDetails.current.pressure} hPa` : 'N/A'}</Text>
+          </View>
+          <View style={[styles.statCardDesktop, {width: '48%', marginBottom: 12}]}>
+            <Text style={styles.statTitle}>Hive Weight</Text>
+            <Text style={[styles.statValue, !hiveDetails.current?.weight && {fontSize: 14, color: '#EF4444'}]}>
+              {hiveDetails.current?.weight ? `${hiveDetails.current.weight} kg` : 'NOT CONNECTED'}
+            </Text>
+          </View>
+          <View style={[styles.statCardDesktop, {width: '48%', marginBottom: 12}]}>
+            <Text style={styles.statTitle}>Rain</Text>
+            <Text style={styles.statValue}>{hiveDetails.current?.rain ? 'RAIN DETECTED' : 'NO RAIN'}</Text>
+          </View>
+          <View style={[styles.statCardDesktop, {width: '48%', marginBottom: 12}]}>
+            <Text style={styles.statTitle}>UV</Text>
+            <Text style={styles.statValue}>{hiveDetails.current?.uv ? hiveDetails.current.uv : 'N/A'}</Text>
+          </View>
+        </View>
+
+        <Text style={styles.sectionTitle}>ENVIRONMENT</Text>
+        <View style={[styles.actionCard, { flexDirection: 'column', alignItems: 'flex-start', padding: 20 }]}>
+          <Text style={{fontWeight: 'bold', color: '#666', marginBottom: 4}}>Environmental Status</Text>
+          <Text style={{fontSize: 20, fontWeight: '900', color: '#111', marginBottom: 12}}>{hiveDetails.environment?.status || 'UNKNOWN'}</Text>
+          <Text style={{fontWeight: 'bold', color: '#666', marginBottom: 4}}>Rule-Based Environment Score</Text>
+          <Text style={{fontSize: 20, fontWeight: '900', color: '#111'}}>{hiveDetails.environment?.score || 0} / 100</Text>
+        </View>
+        
+        <Text style={styles.sectionTitle}>SENSOR HEALTH</Text>
+        <View style={{backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: '#eee'}}>
+          {[
+            { name: 'DHT11', status: hiveDetails.current?.temperature ? 'ONLINE' : 'OFFLINE' },
+            { name: 'BMP180', status: hiveDetails.current?.pressure ? 'ONLINE' : 'OFFLINE' },
+            { name: 'Rain Sensor', status: hiveDetails.current?.rain !== undefined ? 'ONLINE' : 'OFFLINE' },
+            { name: 'GUVA-S12SD', status: hiveDetails.current?.uv ? 'ONLINE' : 'OFFLINE' },
+            { name: 'Load Cell', status: hiveDetails.current?.weight ? 'ONLINE' : 'NOT CONNECTED' },
+          ].map(s => (
+            <View key={s.name} style={{flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f3f4f6'}}>
+              <Text style={{fontWeight: 'bold', color: '#4b5563'}}>{s.name}</Text>
+              <Text style={{fontWeight: '900', color: s.status === 'ONLINE' ? '#10B981' : (s.status === 'NOT CONNECTED' ? '#EF4444' : '#9ca3af')}}>{s.status}</Text>
+            </View>
+          ))}
+        </View>
+
+        <Text style={styles.sectionTitle}>ALERTS</Text>
+        {(!hiveDetails.alerts || hiveDetails.alerts.length === 0) ? (
+          <Text style={{color: '#666', marginBottom: 20}}>No active alerts.</Text>
+        ) : (
+          hiveDetails.alerts.map((a: any) => (
+            <View key={a.id} style={{backgroundColor: '#FFF5F5', borderLeftWidth: 4, borderLeftColor: '#EF4444', padding: 16, borderRadius: 8, marginBottom: 12}}>
+              <Text style={{fontWeight: '900', color: '#EF4444'}}>{a.type}</Text>
+              <Text style={{color: '#EF4444', marginTop: 4}}>{a.message}</Text>
+            </View>
+          ))
+        )}
+      </View>
+    );
+  };
 
   const CreateBatchContent = () => (
     <View style={styles.contentArea}>
@@ -607,6 +717,7 @@ export default function App() {
               <ScrollView style={styles.scrollArea} contentContainerStyle={styles.desktopScrollInner}>
                 {activeTab === 'Dashboard' && <DashboardContent />}
                 {activeTab === 'Hives' && <HivesContent />}
+                {activeTab === 'HiveDetails' && <HiveDetailsContent />}
                 {activeTab === 'CreateHive' && <CreateHiveContent />}
                 {activeTab === 'Batches' && <BatchesContent />}
                 {activeTab === 'CreateBatch' && <CreateBatchContent />}
@@ -623,6 +734,7 @@ export default function App() {
               <View style={styles.mobileContentWrapper}>
                 {activeTab === 'Dashboard' && <DashboardContent />}
                 {activeTab === 'Hives' && <HivesContent />}
+                {activeTab === 'HiveDetails' && <HiveDetailsContent />}
                 {activeTab === 'CreateHive' && <CreateHiveContent />}
                 {activeTab === 'Batches' && <BatchesContent />}
                 {activeTab === 'CreateBatch' && <CreateBatchContent />}
