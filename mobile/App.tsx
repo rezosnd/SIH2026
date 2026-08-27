@@ -39,9 +39,8 @@ const HoneyJarIcon = ({ size = 24, color = "#000", strokeWidth = 2, ...props }: 
   </Svg>
 );
 
-const API = 'https://honeychain-api-2026.loca.lt';
-const TUNNEL_HEADERS = { 'Bypass-Tunnel-Reminder': 'true' };
-const getAuthHeaders = (t: string) => ({ Authorization: `Bearer ${t}`, ...TUNNEL_HEADERS });
+const API = 'https://backend-eight-jade-26.vercel.app';
+const getAuthHeaders = (t: string) => ({ Authorization: `Bearer ${t}` });
 
 export default function App() {
   const [data, setData] = useState<any>(null);
@@ -56,7 +55,7 @@ export default function App() {
   useEffect(() => {
     async function init() {
       try {
-        const tokenRes = await fetch(`${API}/auth/dev-login`, { headers: TUNNEL_HEADERS });
+        const tokenRes = await fetch(`${API}/auth/dev-login`);
         const tokenData = await tokenRes.json();
         setToken(tokenData.access_token);
         

@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Package, CheckCircle, Clock, Beaker, Archive, ChevronRight, AlertCircle, Plus, Printer } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://backend-eight-jade-26.vercel.app';
 
 async function getToken() {
   const r = await fetch(`${API}/auth/dev-login?role=PROCESSOR`);
