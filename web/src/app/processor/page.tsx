@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useState, useCallback } from 'react';
-import { Package, CheckCircle, Clock, Beaker, Archive, ChevronRight, AlertCircle, Plus } from 'lucide-react';
+import { Package, CheckCircle, Clock, Beaker, Archive, ChevronRight, AlertCircle, Plus, Printer } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'https://sih-2026-kiit-1c9fdv5nf-rehan-sumans-projects.vercel.app';
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 async function getToken() {
   const r = await fetch(`${API}/auth/dev-login?role=PROCESSOR`);
@@ -233,13 +234,28 @@ export default function ProcessorDashboard() {
           <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
             <h3 className="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Containers & QR Codes</h3>
             {containers.length > 0 && (
-              <div className="mb-4 space-y-2">
-                {containers.map(c => (
-                  <div key={c.id} className="flex items-center justify-between border border-gray-100 rounded-lg p-3">
-                    <span className="font-mono text-xs text-gray-600">{c.qrData}</span>
-                    <span className="text-xs font-bold text-gray-500">{c.containerSize}kg</span>
-                  </div>
-                ))}
+              <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                {containers.map(c => {
+                  const qrUrl = `https://sih-2026-kiit.vercel.app/verify/${selectedBatch.id}/${c.id}`;
+                  return (
+                    <div key={c.id} className="flex flex-col items-center justify-center border border-gray-200 rounded-xl p-6 bg-gray-50 shadow-sm relative overflow-hidden">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-orange-500"></div>
+                      <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-100 mb-4">
+                        <QRCodeSVG value={qrUrl} size={140} level="H" includeMargin={false} />
+                      </div>
+                      <div className="text-center w-full">
+                        <p className="text-xs font-black uppercase tracking-widest text-gray-500 mb-1">HoneyChain Secure QR</p>
+                        <p className="font-mono text-[10px] text-gray-400 break-all bg-white px-2 py-1 rounded border border-gray-200">{c.qrData}</p>
+                        <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-200 w-full">
+                          <span className="text-sm font-bold text-gray-900">{c.containerSize} kg</span>
+                          <button onClick={() => window.open(qrUrl, '_blank')} className="text-[10px] font-bold uppercase bg-black text-white px-3 py-1.5 rounded flex items-center gap-1 hover:bg-gray-800 transition-colors">
+                            <Printer className="w-3 h-3" /> Print Label
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
             <div className="flex gap-3">
