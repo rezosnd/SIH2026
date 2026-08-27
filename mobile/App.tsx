@@ -145,10 +145,13 @@ export default function App() {
   const MobileHero = () => {
     const isDashboard = activeTab === 'Dashboard';
     return (
-    <View style={[styles.heroSection, !isDashboard && { backgroundColor: '#ffffff', paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' }]}>
+    <View style={[
+      styles.heroSection, 
+      !isDashboard && { backgroundColor: '#ffffff', paddingBottom: 15, paddingTop: Platform.OS === 'android' ? 50 : 25, borderBottomWidth: 1, borderBottomColor: '#f3f4f6', height: 'auto', borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }
+    ]}>
       {isDashboard && <HoneycombBackground />}
       {isDashboard && <Image source={require('./assets/beehouse.png')} style={styles.heroImage} resizeMode="contain" />}
-      <View style={styles.heroTop}>
+      <View style={[styles.heroTop, !isDashboard && { marginBottom: 0 }]}>
         <TouchableOpacity style={styles.iconButton}>
           <Activity size={24} color={isDashboard ? "#fff" : "#111"} strokeWidth={2} />
         </TouchableOpacity>
