@@ -8,73 +8,92 @@ export default function BatchVerificationPage() {
   const params = useParams();
   const qrData = params.qrData as string;
 
-  const [status, setStatus] = useState<'LOADING' | 'VERIFIED' | 'SUSPICIOUS' | 'INVALID'>('LOADING');
+  const [status, setStatus] = useState<'INITIAL' | 'LOADING' | 'VERIFIED' | 'SUSPICIOUS' | 'INVALID'>('INITIAL');
   const [data, setData] = useState<any>(null);
   const [riskReason, setRiskReason] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function verify() {
+  const verify = async () => {
+    setStatus('LOADING');
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://backend-eight-jade-26.vercel.app';
+
+      // 1. Get user location (ask for permission)
+      let locationPayload = {};
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://backend-eight-jade-26.vercel.app';
-
-        // 1. Get user location (ask for permission)
-        let locationPayload = {};
-        try {
-          const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-            if (!navigator.geolocation) return reject('No geolocation');
-            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 });
-          });
-          
-          // Reverse geocode to get city/country using free API
-          const { latitude, longitude } = position.coords;
-          const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
-          if (geoRes.ok) {
-            const geoData = await geoRes.json();
-            locationPayload = {
-              city: geoData.city || geoData.locality,
-              state: geoData.principalSubdivision,
-              country: geoData.countryName,
-            };
-          }
-        } catch (err) {
-          console.warn('Geolocation failed or denied:', err);
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+          if (!navigator.geolocation) return reject('No geolocation');
+          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 });
+        });
+        
+        // Reverse geocode to get city/country using free API
+        const { latitude, longitude } = position.coords;
+        const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
+        if (geoRes.ok) {
+          const geoData = await geoRes.json();
+          locationPayload = {
+            city: geoData.city || geoData.locality,
+            state: geoData.principalSubdivision,
+            country: geoData.countryName,
+          };
         }
-
-        // 2. Try to record a QR scan
-        let scanStatus = 'VERIFIED';
-        try {
-          const scanRes = await fetch(`${apiUrl}/qr/${encodeURIComponent(qrData)}/scan`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(locationPayload),
-          });
-          if (scanRes.ok) {
-            const scanResult = await scanRes.json();
-            scanStatus = scanResult.status || 'VERIFIED';
-            if (scanStatus === 'SUSPICIOUS') {
-              setRiskReason(scanResult.riskReason || 'Suspicious scanning pattern detected.');
-            }
-          }
-        } catch {
-          // Container QR scan failed — this is a batch QR, scanStatus stays VERIFIED
-        }
-
-        // 3. Fetch batch data using batch-level QR verification
-        const batchRes = await fetch(`${apiUrl}/batches/verify/${encodeURIComponent(qrData)}`);
-        if (!batchRes.ok) {
-          setStatus('INVALID');
-          return;
-        }
-        const batchData = await batchRes.json();
-        setData(batchData);
-        setStatus(scanStatus as any);
-      } catch {
-        setStatus('INVALID');
+      } catch (err) {
+        console.warn('Geolocation failed or denied:', err);
       }
-    }
 
-    setTimeout(verify, 800);
-  }, [qrData]);
+      // 2. Try to record a QR scan
+      let scanStatus = 'VERIFIED';
+      try {
+        const scanRes = await fetch(`${apiUrl}/qr/${encodeURIComponent(qrData)}/scan`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(locationPayload),
+        });
+        if (scanRes.ok) {
+          const scanResult = await scanRes.json();
+          scanStatus = scanResult.status || 'VERIFIED';
+          if (scanStatus === 'SUSPICIOUS') {
+            setRiskReason(scanResult.riskReason || 'Suspicious scanning pattern detected.');
+          }
+        }
+      } catch {
+        // Container QR scan failed — this is a batch QR, scanStatus stays VERIFIED
+      }
+
+      // 3. Fetch batch data using batch-level QR verification
+      const batchRes = await fetch(`${apiUrl}/batches/verify/${encodeURIComponent(qrData)}`);
+      if (!batchRes.ok) {
+        setStatus('INVALID');
+        return;
+      }
+      const batchData = await batchRes.json();
+      setData(batchData);
+      setStatus(scanStatus as any);
+    } catch {
+      setStatus('INVALID');
+    }
+  };
+
+  if (status === 'INITIAL') {
+    return (
+      <div className="h-[100dvh] flex flex-col items-center justify-center bg-[#f2f2f7] p-4 font-sans text-gray-900">
+        <div className="w-full max-w-sm bg-white rounded-3xl drop-shadow-xl p-8 flex flex-col items-center text-center">
+          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+            <ShieldCheck className="w-10 h-10 text-gray-900" />
+          </div>
+          <h1 className="text-2xl font-black mb-2 uppercase tracking-tight">HoneyChain</h1>
+          <p className="text-sm text-gray-500 font-semibold mb-8 leading-relaxed">
+            Please allow location access to verify the authenticity of this product and detect counterfeits.
+          </p>
+          <button 
+            onClick={verify}
+            className="w-full bg-black text-white font-bold text-lg py-4 rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center"
+          >
+            Verify Product <ChevronRight className="w-5 h-5 ml-2" />
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (status === 'LOADING') {
     return (
