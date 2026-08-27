@@ -42,13 +42,14 @@ export class QrService {
     const recentScans = container.scans;
     const now = new Date();
 
-    // Rule 1: Scan Frequency (> 5 scans in 5 minutes)
+    // Rule 1: Scan Frequency (> 2 scans in 5 minutes)
     const fiveMinutesAgo = new Date(now.getTime() - 5 * 60000);
     const scansInLast5Mins = recentScans.filter((s) => s.timestamp > fiveMinutesAgo);
     
-    if (scansInLast5Mins.length >= 5) {
+    // For demo purposes, we trigger on just 2 scans!
+    if (scansInLast5Mins.length >= 2) {
       isSuspicious = true;
-      riskReason = 'Excessive scans in short time period.';
+      riskReason = 'Excessive scans in short time period (Multiple Scans Detected).';
     }
 
     // Rule 2: Unrealistic Geographic Movement (different city within 2 hours)
