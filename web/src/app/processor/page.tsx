@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Package, CheckCircle, Clock, Beaker, Archive, ChevronRight, AlertCircle, Plus } from 'lucide-react';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'https://sih-2026-kiit.vercel.app';
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://10.170.214.1:4000';
 
 async function getToken() {
   const r = await fetch(`${API}/auth/dev-login?role=PROCESSOR`);

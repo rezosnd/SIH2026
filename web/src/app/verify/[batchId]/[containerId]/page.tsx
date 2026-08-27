@@ -15,7 +15,7 @@ export default function VerificationPage() {
   useEffect(() => {
     async function recordScan() {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://sih-2026-kiit.vercel.app';
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://10.170.214.1:4000';
         const res = await fetch(`${apiUrl}/qr/${containerId}/scan`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
