@@ -64,31 +64,7 @@ export default function KvicDashboard() {
     </div>
   );
 
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-[#f3f4f6] flex items-center justify-center font-sans">
-        <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm text-center border border-gray-200">
-          <div className="flex justify-center mb-4"><Hexagon className="w-12 h-12 text-gray-900" /></div>
-          <h1 className="text-xl font-black uppercase tracking-widest text-gray-900 mb-2">KVIC Portal</h1>
-          <p className="text-xs text-gray-500 mb-6 font-semibold">Enter your secure password to continue</p>
-          <input 
-            type="password" 
-            value={password} 
-            onChange={e => setPassword(e.target.value)}
-            placeholder="Password"
-            className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900 mb-4 text-center font-mono"
-            onKeyDown={e => e.key === 'Enter' && password === 'password123' && setIsAuthenticated(true)}
-          />
-          <button 
-            onClick={() => password === 'password123' && setIsAuthenticated(true)}
-            className="w-full bg-gray-900 text-white font-bold py-3 rounded-lg hover:bg-black transition-colors"
-          >
-            LOGIN
-          </button>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="min-h-screen bg-[#f3f4f6] flex font-sans">
