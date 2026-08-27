@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Package, CheckCircle, Clock, Beaker, Archive, ChevronRight, AlertCircle, Plus } from 'lucide-react';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://10.170.214.1:4000';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://sih-2026-kiit-1c9fdv5nf-rehan-sumans-projects.vercel.app';
 
 async function getToken() {
   const r = await fetch(`${API}/auth/dev-login?role=PROCESSOR`);
@@ -28,6 +28,8 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 export default function ProcessorDashboard() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState('');
   const [token, setToken] = useState('');
   const [dashboard, setDashboard] = useState<any>(null);
   const [available, setAvailable] = useState<any[]>([]);
