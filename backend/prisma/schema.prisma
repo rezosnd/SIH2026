@@ -1,0 +1,167 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  BEEKEEPER
+  PROCESSOR
+  ADMIN
+  KVIC
+}
+
+enum HiveStatus {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+}
+
+enum BatchStatus {
+  HARVESTED
+  PROCESSING
+  PACKAGED
+  DISTRIBUTED
+}
+
+model User {
+  id             String    @id @default(uuid())
+  email          String    @unique
+  password       String
+  role           Role      @default(BEEKEEPER)
+  clusterId      String?
+  cluster        Cluster?  @relation(fields: [clusterId], references: [id])
+  beekeeperProfile BeekeeperProfile?
+  events         SupplyChainEvent[]
+  notifications  Notification[]
+  auditLogs      AuditLog[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model Cluster {
+  id          String   @id @default(uuid())
+  name        String
+  location    String
+  description String?
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model BeekeeperProfile {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  farmLocation String
+  contact      String?
+  hives        Hive[]
+  batches      HoneyBatch[]
+}
+
+model Hive {
+  id               String           @id @default(uuid())
+  beekeeperId      String
+  beekeeper        BeekeeperProfile @relation(fields: [beekeeperId], references: [id], onDelete: Cascade)
+  location         String
+  status           HiveStatus       @default(ACTIVE)
+  registrationDate DateTime         @default(now())
+  batches          HoneyBatch[]
+}
+
+model HoneyBatch {
+  id            String             @id @default(uuid())
+  beekeeperId   String
+  beekeeper     BeekeeperProfile   @relation(fields: [beekeeperId], references: [id])
+  hiveId        String
+  hive          Hive               @relation(fields: [hiveId], references: [id])
+  status        BatchStatus        @default(HARVESTED)
+  harvestDate   DateTime           @default(now())
+  quantity      Float              // in kg or liters
+  ipfsHash      String?
+  txHash        String?
+  qrData        String?            @unique
+  containers    BatchContainer[]
+  events        SupplyChainEvent[]
+  qualityRecords QualityRecord[]
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+}
+
+model BatchContainer {
+  id            String        @id @default(uuid())
+  batchId       String
+  batch         HoneyBatch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  qrData        String        @unique // unique package identifier
+  containerSize Float         // e.g., 0.5 kg, 1 kg
+  scans         QRScan[]
+}
+
+model SupplyChainEvent {
+  id          String     @id @default(uuid())
+  batchId     String
+  batch       HoneyBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  eventType   String     // HARVEST, FILTERING, BOTTLING, QA_CHECK
+  description String?
+  location    String?
+  userId      String
+  user        User       @relation(fields: [userId], references: [id])
+  txHash      String?    // On-chain trace
+  timestamp   DateTime   @default(now())
+}
+
+model QualityRecord {
+  id          String     @id @default(uuid())
+  batchId     String
+  batch       HoneyBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  metric      String     // MOISTURE_CONTENT, HMF_LEVEL, POLLEN_COUNT
+  value       String
+  documentUrl String?    // IPFS link to the certificate
+  timestamp   DateTime   @default(now())
+}
+
+model QRScan {
+  id            String         @id @default(uuid())
+  containerId   String
+  container     BatchContainer @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  location      String?
+  ipAddress     String?
+  userAgent     String?
+  country       String?
+  state         String?
+  city          String?
+  isSuspicious  Boolean        @default(false)
+  timestamp     DateTime       @default(now())
+}
+
+model Document {
+  id         String   @id @default(uuid())
+  entityId   String
+  entityType String   // BATCH, HIVE, BEEKEEPER
+  url        String
+  createdAt  DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // QR_SUSPICIOUS_LOCATION, BATCH_APPROVAL, etc.
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  actorId   String?
+  actor     User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action    String   // LOGIN, QR_SCANNED, BATCH_CREATED
+  resource  String?  // The ID of the affected resource
+  metadata  String?  // JSON stringified additional data
+  timestamp DateTime @default(now())
+}
