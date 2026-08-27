@@ -236,7 +236,8 @@ export default function ProcessorDashboard() {
             {containers.length > 0 && (
               <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                 {containers.map(c => {
-                  const qrUrl = `https://sih-2026-kiit.vercel.app/verify/${selectedBatch.id}/${c.id}`;
+                  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://sih-2026-kiit.vercel.app';
+                  const qrUrl = `${baseUrl}/verify/${selectedBatch.id}/${c.id}`;
                   return (
                     <div key={c.id} className="flex flex-col items-center justify-center border border-gray-200 rounded-xl p-6 bg-gray-50 shadow-sm relative overflow-hidden">
                       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-orange-500"></div>

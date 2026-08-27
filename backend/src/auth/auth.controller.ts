@@ -49,7 +49,13 @@ export class AuthController {
       PROCESSOR: 'Demo Processor',
     };
     const displayName = nameMap[role] || `Demo ${role}`;
-    const email = `demo_${role.toLowerCase()}@honeychain.com`;
+    const emailMap: Record<string, string> = {
+      BEEKEEPER: 'beekeeper@honeychain.local',
+      ADMIN: 'admin@honeychain.gov.in',
+      KVIC: 'kvic@honeychain.gov.in',
+      PROCESSOR: 'processor@honeychain.local',
+    };
+    const email = emailMap[role] || `demo_${role.toLowerCase()}@honeychain.com`;
 
     // findOrCreate the user with correct role
     const user = await this.authService['usersService'].findOrCreateGoogleUser(
