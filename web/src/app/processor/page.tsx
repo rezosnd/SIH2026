@@ -108,7 +108,10 @@ export default function ProcessorDashboard() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ containerSize: parseFloat(containerSize) }),
       });
-      if (res.ok) setContainers(prev => [...prev, await res.json()]);
+      if (res.ok) {
+        const newContainer = await res.json();
+        setContainers(prev => [...prev, newContainer]);
+      }
     } finally { setActionLoading(false); }
   };
 
