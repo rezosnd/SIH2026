@@ -52,7 +52,7 @@ export default function App() {
   useEffect(() => {
     async function init() {
       try {
-        const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:4000';
+        const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'https://sih-2026-kiit.vercel.app';
         const tokenRes = await fetch(`${apiUrl}/auth/dev-login`);
         const tokenData = await tokenRes.json();
         setToken(tokenData.access_token);

@@ -11,12 +11,10 @@ let express;
 async function bootstrap() {
   if (!cachedServer) {
     NestFactory = require('@nestjs/core').NestFactory;
-    const path = require('path');
     try {
-      const appModulePath = path.join(process.cwd(), 'dist', 'app.module.js');
-      AppModule = require(appModulePath).AppModule;
+      AppModule = require('../dist/app.module.js').AppModule;
     } catch (err) {
-      throw new Error('Dynamic require failed: ' + err.message);
+      throw new Error('Static require failed: ' + err.message);
     }
 
     ExpressAdapter = require('@nestjs/platform-express').ExpressAdapter;
