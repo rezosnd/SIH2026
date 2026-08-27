@@ -11,7 +11,22 @@ let express;
 async function bootstrap() {
   if (!cachedServer) {
     NestFactory = require('@nestjs/core').NestFactory;
-    AppModule = require('../dist/app.module').AppModule;
+    
+    // Try multiple paths because Vercel lambda filesystem structure can be tricky
+    try {
+      AppModule = require('../dist/app.module').AppModule;
+    } catch (e1) {
+      try {
+        AppModule = require('./dist/app.module').AppModule;
+      } catch (e2) {
+        try {
+          AppModule = require(require('path').join(process.cwd(), 'dist', 'app.module')).AppModule;
+        } catch (e3) {
+          throw new Error('Failed to resolve app.module. e1:' + e1.message + ' e2:' + e2.message + ' e3:' + e3.message);
+        }
+      }
+    }
+
     ExpressAdapter = require('@nestjs/platform-express').ExpressAdapter;
     express = require('express');
     const server = express();
