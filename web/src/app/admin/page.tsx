@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { ShieldAlert, Users, Hexagon, BarChart3, Activity, PackageCheck, AlertTriangle, Bell, ChevronRight, CheckCircle, XCircle, Eye } from 'lucide-react';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://sih-2026-kiit.vercel.app';
 
 async function getToken(role = 'ADMIN') {
   const r = await fetch(`${API}/auth/dev-login?role=${role}`);
