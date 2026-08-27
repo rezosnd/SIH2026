@@ -9,7 +9,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     async function fetchStats() {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://sih-2026-kiit.vercel.app';
         const res = await fetch(`${apiUrl}/admin/dashboard`);
         if (res.ok) {
           setStats(await res.json());

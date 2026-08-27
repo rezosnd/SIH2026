@@ -1,15 +1,42 @@
 import { StatusBar } from 'expo-status-bar';
 import { 
-  StyleSheet, Text, View, SafeAreaView, TouchableOpacity, 
+  StyleSheet, Text, View, TouchableOpacity, 
   ScrollView, ActivityIndicator, useWindowDimensions, Platform, Image 
 } from 'react-native';
+import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
 import { 
-  Bell, User, Home, Package, QrCode, Printer, PlusCircle, Hexagon, Database, ChevronRight, AlertCircle, Activity
+  Bell, User, Home, Package, QrCode, Printer, PackagePlus, ChevronRight, Activity, Hexagon, AlertCircle
 } from 'lucide-react-native';
+import Svg, { Path } from 'react-native-svg';
 
 const BRAND_FONT = Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' });
 const SANS_FONT = Platform.select({ ios: 'System', android: 'sans-serif', default: 'sans-serif' });
+
+// Custom Beehive Icon to match Lucide's style (stroke: currentColor, fill: none, stroke-width: 2)
+const BeehiveIcon = ({ size = 24, color = "#000", strokeWidth = 2, ...props }: any) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <Path d="M7 8c0-2.76 2.24-5 5-5s5 2.24 5 5" />
+    <Path d="M4 8h16" />
+    <Path d="M4 8v3h16V8" />
+    <Path d="M5 11v3h14v-3" />
+    <Path d="M6 14v3h12v-3" />
+    <Path d="M7 17v4h10v-4" />
+    <Path d="M11 21v-3a1 1 0 0 1 2 0v3" />
+  </Svg>
+);
+
+// Custom Honey Jar Icon
+const HoneyJarIcon = ({ size = 24, color = "#000", strokeWidth = 2, ...props }: any) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <Path d="M8 4h8" />
+    <Path d="M7 4v3h10V4" />
+    <Path d="M7 7c-2 2-2 14-2 14h14c0 0 0-12-2-14" />
+    <Path d="M5 12h14" />
+    <Path d="M6 17h12" />
+    <Path d="M12 12v3a1 1 0 0 1-2 0" />
+  </Svg>
+);
 
 export default function App() {
   const [data, setData] = useState<any>(null);
@@ -23,7 +50,7 @@ export default function App() {
   useEffect(() => {
     async function fetchDashboard() {
       try {
-        const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:4000';
+        const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'https://sih-2026-kiit.vercel.app';
         const res = await fetch(`${apiUrl}/beekeepers/dashboard`);
         if (res.ok) {
           setData(await res.json());
@@ -55,15 +82,28 @@ export default function App() {
     </View>
   );
 
+  const HoneycombBackground = () => (
+    <View style={styles.honeycombWrapper}>
+      <Hexagon size={60} color="rgba(255,255,255,0.02)" style={{ position: 'absolute', top: 0, left: 40 }} strokeWidth={1} />
+      <Hexagon size={60} color="rgba(255,255,255,0.03)" style={{ position: 'absolute', top: 30, left: 90 }} strokeWidth={1} />
+      <Hexagon size={60} color="rgba(255,255,255,0.02)" style={{ position: 'absolute', top: 80, left: 40 }} strokeWidth={1} />
+      <Hexagon size={60} color="rgba(255,255,255,0.04)" style={{ position: 'absolute', top: -20, left: 140 }} strokeWidth={1} />
+      <Hexagon size={60} color="rgba(255,255,255,0.03)" style={{ position: 'absolute', top: 30, left: 190 }} strokeWidth={1} />
+      <Hexagon size={60} color="rgba(255,255,255,0.02)" style={{ position: 'absolute', top: 80, left: 140 }} strokeWidth={1} />
+      <Hexagon size={60} color="rgba(255,255,255,0.02)" style={{ position: 'absolute', top: 130, left: 90 }} strokeWidth={1} />
+    </View>
+  );
+
   const MobileHero = () => (
     <View style={styles.heroSection}>
-      {/* Real photographic grayscale beehive hero background */}
+      <HoneycombBackground />
+      
+      {/* Colorful Beehive Image (No dark overlays!) */}
       <Image 
-        source={{ uri: 'https://images.unsplash.com/photo-1587049352847-81a56d773c1c?q=80&w=800&auto=format&fit=crop&sat=-100' }} 
+        source={require('./assets/beehouse.png')} 
         style={styles.heroImage}
-        resizeMode="cover"
+        resizeMode="contain"
       />
-      <View style={styles.heroGradientOverlay} />
       
       <View style={styles.heroTop}>
         <TouchableOpacity style={styles.iconButton}>
@@ -130,10 +170,10 @@ export default function App() {
   const DashboardContent = () => (
     <View style={styles.contentArea}>
       <View style={styles.statsGrid}>
-        <StatCard title="ACTIVE HIVES" value={data?.activeHives} IconComponent={Hexagon} />
-        <StatCard title="HARVESTED" value={data?.totalHarvested} unit="kg" IconComponent={Database} />
+        <StatCard title="ACTIVE HIVES" value={data?.activeHives} IconComponent={BeehiveIcon} />
+        <StatCard title="HARVESTED" value={data?.totalHarvested} unit="kg" IconComponent={HoneyJarIcon} />
         <StatCard title="ACTIVE BATCHES" value={data?.activeBatches} IconComponent={Package} />
-        <StatCard title="QR ALERTS" value={data?.alerts} alert={true} IconComponent={QrCode} />
+        <StatCard title="QR ALERTS" value={data?.alerts} alert={data?.alerts > 0} IconComponent={QrCode} />
       </View>
 
       <HiveStatus />
@@ -141,8 +181,8 @@ export default function App() {
       <Text style={styles.sectionTitle}>QUICK ACTIONS</Text>
 
       <View style={styles.actionsGrid}>
-        <ActionCard title="Create Honey Batch" desc="Record a new harvest" IconComponent={PlusCircle} />
-        <ActionCard title="Manage Hives" desc="Register or update hive status" IconComponent={Hexagon} />
+        <ActionCard title="Create Honey Batch" desc="Record a new harvest" IconComponent={PackagePlus} />
+        <ActionCard title="Manage Hives" desc="Register or update hive status" IconComponent={BeehiveIcon} />
         <ActionCard title="Print QR Labels" desc="Generate labels for packaging" IconComponent={Printer} />
       </View>
     </View>
@@ -150,13 +190,12 @@ export default function App() {
 
   const MobileBottomNav = () => (
     <View style={styles.bottomNav}>
-      <TouchableOpacity style={styles.navItem}>
-        <View style={styles.navActiveIndicator} />
-        <Home size={24} color="#111111" strokeWidth={2} />
+      <TouchableOpacity style={styles.navItemActive}>
+        <Home size={22} color="#FFFFFF" strokeWidth={2} />
         <Text style={styles.navTextActive}>Dashboard</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.navItem}>
-        <Hexagon size={24} color="#999999" strokeWidth={2} />
+        <BeehiveIcon size={24} color="#999999" strokeWidth={2} />
         <Text style={styles.navText}>Hives</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.navItem}>
@@ -164,7 +203,7 @@ export default function App() {
         <Text style={styles.navText}>Batches</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.navItem}>
-        <AlertCircle size={24} color="#999999" strokeWidth={2} />
+        <Bell size={24} color="#999999" strokeWidth={2} />
         <Text style={styles.navText}>Alerts</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.navItem}>
@@ -185,7 +224,7 @@ export default function App() {
           <Text style={styles.sidebarTextActive}>Dashboard</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.sidebarItem}>
-          <Hexagon size={20} color="#6B6B6B" strokeWidth={2} />
+          <BeehiveIcon size={20} color="#6B6B6B" strokeWidth={2} />
           <Text style={styles.sidebarText}>Hives</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.sidebarItem}>
@@ -193,8 +232,8 @@ export default function App() {
           <Text style={styles.sidebarText}>Batches</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.sidebarItem}>
-          <AlertCircle size={20} color="#6B6B6B" strokeWidth={2} />
-          <Text style={styles.sidebarText}>QR Alerts</Text>
+          <Bell size={20} color="#6B6B6B" strokeWidth={2} />
+          <Text style={styles.sidebarText}>Alerts</Text>
         </TouchableOpacity>
       </View>
       <TouchableOpacity style={styles.sidebarItem}>
@@ -205,37 +244,39 @@ export default function App() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style={isLargeScreen ? "dark" : "light"} />
-      
-      {isLargeScreen ? (
-        <View style={styles.desktopLayout}>
-          <DesktopSidebar />
-          <View style={styles.desktopMain}>
-            <View style={styles.desktopHeader}>
-              <View>
-                <Text style={styles.welcomeTextDark}>Welcome back,</Text>
-                <Text style={styles.welcomeNameDark}>{loading ? '...' : (data?.name || 'Beekeeper')}</Text>
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.container}>
+        <StatusBar style={isLargeScreen ? "dark" : "light"} />
+        
+        {isLargeScreen ? (
+          <View style={styles.desktopLayout}>
+            <DesktopSidebar />
+            <View style={styles.desktopMain}>
+              <View style={styles.desktopHeader}>
+                <View>
+                  <Text style={styles.welcomeTextDark}>Welcome back,</Text>
+                  <Text style={styles.welcomeNameDark}>{loading ? '...' : (data?.name || 'Beekeeper')}</Text>
+                </View>
+                <TopControls isDark={true} />
               </View>
-              <TopControls isDark={true} />
+              <ScrollView style={styles.scrollArea} contentContainerStyle={styles.desktopScrollInner}>
+                <DashboardContent />
+              </ScrollView>
             </View>
-            <ScrollView style={styles.scrollArea} contentContainerStyle={styles.desktopScrollInner}>
-              <DashboardContent />
-            </ScrollView>
           </View>
-        </View>
-      ) : (
-        <View style={styles.mobileLayout}>
-          <ScrollView style={styles.scrollArea} contentContainerStyle={styles.mobileScrollInner} bounces={false}>
-            <MobileHero />
-            <View style={styles.mobileContentWrapper}>
-              <DashboardContent />
-            </View>
-          </ScrollView>
-          <MobileBottomNav />
-        </View>
-      )}
-    </SafeAreaView>
+        ) : (
+          <View style={styles.mobileLayout}>
+            <ScrollView style={styles.scrollArea} contentContainerStyle={styles.mobileScrollInner} bounces={false}>
+              <MobileHero />
+              <View style={styles.mobileContentWrapper}>
+                <DashboardContent />
+              </View>
+            </ScrollView>
+            <MobileBottomNav />
+          </View>
+        )}
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
@@ -338,23 +379,21 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     height: 380,
   },
+  honeycombWrapper: {
+    position: 'absolute',
+    right: -20,
+    top: 40,
+    width: 300,
+    height: 300,
+    zIndex: 0,
+  },
   heroImage: {
     position: 'absolute',
-    top: 0,
-    right: -50,
-    width: 350,
-    height: '100%',
-    opacity: 0.25,
+    bottom: -10,
+    right: -20,
+    width: 260,
+    height: 280,
     zIndex: 1,
-  },
-  heroGradientOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    zIndex: 2,
   },
   heroTop: {
     flexDirection: 'row',
@@ -552,17 +591,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 24,
+    borderRadius: 20,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#E8E8E8',
-    height: 90,
+    borderColor: '#E7E7E7',
+    height: 86,
   },
   actionIconWrapperDark: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: '#0A0A0A',
+    width: 54,
+    height: 54,
+    borderRadius: 14,
+    backgroundColor: '#080808',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
@@ -590,7 +629,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 82,
+    height: 76,
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
     borderTopColor: '#E8E8E8',
@@ -598,21 +637,23 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     paddingBottom: Platform.OS === 'ios' ? 20 : 0, 
+    paddingHorizontal: 10,
   },
   navItem: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: 8,
     width: 60,
-    position: 'relative',
   },
-  navActiveIndicator: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+  navItemActive: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: '#111111',
-    position: 'absolute',
-    top: -2,
+    borderRadius: 16,
+    height: 54,
+    width: 68,
+    marginTop: Platform.OS === 'ios' ? -10 : 0,
   },
   navText: {
     fontFamily: SANS_FONT,
@@ -625,7 +666,7 @@ const styles = StyleSheet.create({
     fontFamily: SANS_FONT,
     fontSize: 10,
     fontWeight: '700',
-    color: '#111111',
+    color: '#FFFFFF',
     marginTop: 4,
   }
 });
