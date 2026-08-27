@@ -1,7 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { 
   StyleSheet, Text, View, TouchableOpacity, 
-  ScrollView, ActivityIndicator, useWindowDimensions, Platform, Image,
+  ScrollView, ActivityIndicator, useWindowDimensions, Platform, Image, ImageBackground,
   Alert, TextInput
 } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
@@ -147,7 +147,8 @@ export default function App() {
     return (
     <View style={[
       styles.heroSection, 
-      !isDashboard && { backgroundColor: '#ffffff', paddingBottom: 15, paddingTop: Platform.OS === 'android' ? 50 : 25, borderBottomWidth: 1, borderBottomColor: '#f3f4f6', height: 'auto', borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }
+      !isDashboard && { backgroundColor: 'rgba(255,255,255,0.4)', paddingBottom: 15, paddingTop: Platform.OS === 'android' ? 50 : 25, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.05)', height: 'auto', borderBottomLeftRadius: 0, borderBottomRightRadius: 0 },
+      isDashboard && { backgroundColor: 'rgba(17,17,17,0.95)' }
     ]}>
       {isDashboard && <HoneycombBackground />}
       {isDashboard && <Image source={require('./assets/beehouse.png')} style={styles.heroImage} resizeMode="contain" />}
@@ -720,37 +721,39 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={styles.container}>
-        <StatusBar style={isLargeScreen ? "dark" : "light"} />
-        
-        {isLargeScreen ? (
-          <View style={styles.desktopLayout}>
-            <DesktopSidebar />
-            <View style={styles.desktopMain}>
-              {activeTab === 'Dashboard' && (
-                <View style={styles.desktopHeader}>
-                  <View>
-                    <Text style={styles.welcomeTextDark}>Welcome back,</Text>
-                    <Text style={styles.welcomeNameDark}>{loading ? '...' : (data?.name || 'Beekeeper')}</Text>
-                  </View>
-                  <TopControls isDark={true} />
+      <ImageBackground source={require('./assets/bg.png')} style={{ flex: 1 }} resizeMode="cover">
+        <View style={{ flex: 1, backgroundColor: 'rgba(243, 244, 246, 0.85)' }}>
+          <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}>
+            <StatusBar style={isLargeScreen ? "dark" : "light"} />
+            
+            {isLargeScreen ? (
+              <View style={[styles.desktopLayout, { backgroundColor: 'transparent' }]}>
+                <DesktopSidebar />
+                <View style={styles.desktopMain}>
+                  {activeTab === 'Dashboard' && (
+                    <View style={styles.desktopHeader}>
+                      <View>
+                        <Text style={styles.welcomeTextDark}>Welcome back,</Text>
+                        <Text style={styles.welcomeNameDark}>{loading ? '...' : (data?.name || 'Beekeeper')}</Text>
+                      </View>
+                      <TopControls isDark={true} />
+                    </View>
+                  )}
+                  <ScrollView style={styles.scrollArea} contentContainerStyle={styles.desktopScrollInner}>
+                    {activeTab === 'Dashboard' && <DashboardContent />}
+                    {activeTab === 'Hives' && <HivesContent />}
+                    {activeTab === 'HiveDetails' && <HiveDetailsContent />}
+                    {activeTab === 'CreateHive' && <CreateHiveContent />}
+                    {activeTab === 'Batches' && <BatchesContent />}
+                    {activeTab === 'CreateBatch' && <CreateBatchContent />}
+                    {activeTab === 'Containers' && <ContainersContent />}
+                    {activeTab === 'Alerts' && <AlertsContent />}
+                    {activeTab === 'Profile' && <ProfileContent />}
+                  </ScrollView>
                 </View>
-              )}
-              <ScrollView style={styles.scrollArea} contentContainerStyle={styles.desktopScrollInner}>
-                {activeTab === 'Dashboard' && <DashboardContent />}
-                {activeTab === 'Hives' && <HivesContent />}
-                {activeTab === 'HiveDetails' && <HiveDetailsContent />}
-                {activeTab === 'CreateHive' && <CreateHiveContent />}
-                {activeTab === 'Batches' && <BatchesContent />}
-                {activeTab === 'CreateBatch' && <CreateBatchContent />}
-                {activeTab === 'Containers' && <ContainersContent />}
-                {activeTab === 'Alerts' && <AlertsContent />}
-                {activeTab === 'Profile' && <ProfileContent />}
-              </ScrollView>
-            </View>
-          </View>
-        ) : (
-          <View style={styles.mobileLayout}>
+              </View>
+            ) : (
+              <View style={[styles.mobileLayout, { backgroundColor: 'transparent' }]}>
             <ScrollView style={styles.scrollArea} contentContainerStyle={styles.mobileScrollInner} bounces={false}>
               <MobileHero />
               <View style={styles.mobileContentWrapper}>
@@ -762,13 +765,15 @@ export default function App() {
                 {activeTab === 'CreateBatch' && <CreateBatchContent />}
                 {activeTab === 'Containers' && <ContainersContent />}
                 {activeTab === 'Alerts' && <AlertsContent />}
-                {activeTab === 'Profile' && <ProfileContent />}
+                  {activeTab === 'Profile' && <ProfileContent />}
+                </View>
+              </ScrollView>
+              <MobileBottomNav />
               </View>
-            </ScrollView>
-            <MobileBottomNav />
-          </View>
-        )}
-      </SafeAreaView>
+            )}
+          </SafeAreaView>
+        </View>
+      </ImageBackground>
     </SafeAreaProvider>
   );
 }
