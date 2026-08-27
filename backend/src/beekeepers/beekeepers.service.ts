@@ -34,6 +34,7 @@ export class BeekeepersService {
     let totalHarvested = 0;
     let activeBatchesCount = 0;
     let alertCount = 0;
+    const recentAlerts: any[] = [];
 
     for (const batch of profile.batches) {
       totalHarvested += batch.quantity;
@@ -41,9 +42,22 @@ export class BeekeepersService {
         activeBatchesCount++;
       }
       for (const container of batch.containers) {
-        alertCount += container.scans.filter(s => s.isSuspicious).length;
+        const suspiciousScans = container.scans.filter(s => s.isSuspicious);
+        alertCount += suspiciousScans.length;
+        suspiciousScans.forEach(scan => {
+          recentAlerts.push({
+            id: scan.id,
+            qrData: container.qrData,
+            batchId: batch.id.substring(0, 8),
+            city: scan.city,
+            timestamp: scan.timestamp
+          });
+        });
       }
     }
+
+    // Sort alerts by newest first
+    recentAlerts.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
     return {
       name: profile.name,
@@ -52,6 +66,7 @@ export class BeekeepersService {
       totalHarvested,
       activeBatches: activeBatchesCount,
       alerts: alertCount,
+      recentAlerts,
     };
   }
 }

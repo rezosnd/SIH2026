@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import * as nodemailer from 'nodemailer';
 
 interface LocationData {
   city?: string;
@@ -11,7 +12,47 @@ interface LocationData {
 
 @Injectable()
 export class QrService {
-  constructor(private prisma: PrismaService) {}
+  private transporter: nodemailer.Transporter;
+
+  constructor(private prisma: PrismaService) {
+    // Create a generic transporter for demo purposes
+    this.transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.SMTP_USER || 'your-email@gmail.com',
+        pass: process.env.SMTP_PASS || 'your-app-password',
+      },
+    });
+  }
+
+  async sendSuspiciousAlertEmail(batchId: string, reason: string, city?: string) {
+    try {
+      if (!process.env.SMTP_USER) {
+        console.log(`[EMAIL MOCK] Sending alert to rehansuman41008@gmail.com: Batch ${batchId} compromised! Reason: ${reason}`);
+        return;
+      }
+      
+      await this.transporter.sendMail({
+        from: '"HoneyChain Security" <security@honeychain.com>',
+        to: 'rehansuman41008@gmail.com',
+        subject: '⚠️ HIGH RISK: Suspicious QR Activity Detected',
+        html: `
+          <div style="font-family: sans-serif; padding: 20px; border: 1px solid #ffcccc; background-color: #fff5f5;">
+            <h2 style="color: #d32f2f;">Suspicious QR Activity Detected</h2>
+            <p><strong>Batch ID:</strong> ${batchId}</p>
+            <p><strong>Alert Reason:</strong> ${reason}</p>
+            <p><strong>Location:</strong> ${city || 'Unknown'}</p>
+            <p><strong>Timestamp:</strong> ${new Date().toLocaleString()}</p>
+            <hr />
+            <p style="font-size: 12px; color: #666;">This is an automated security alert from the HoneyChain KVIC Admin Center.</p>
+          </div>
+        `,
+      });
+      console.log('Security alert email sent to rehansuman41008@gmail.com');
+    } catch (err) {
+      console.error('Failed to send email:', err);
+    }
+  }
 
   async recordScan(qrData: string, locationData: LocationData) {
     const container = await this.prisma.batchContainer.findUnique({
@@ -113,6 +154,9 @@ export class QrService {
           metadata: JSON.stringify({ riskLevel: 'HIGH', reason: riskReason, city: locationData.city }),
         },
       });
+
+      // Send email alert to Admin
+      await this.sendSuspiciousAlertEmail(container.batchId.substring(0, 8), riskReason, locationData.city);
     }
 
     return {

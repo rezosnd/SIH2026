@@ -7,7 +7,7 @@ import {
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
 import { 
-  Bell, User, Home, Package, QrCode, Printer, PackagePlus, ChevronRight, Activity, Hexagon, AlertCircle
+  Bell, User, Home, Package, QrCode, Printer, PackagePlus, ChevronRight, Activity, Hexagon, AlertCircle, ShieldAlert, AlertTriangle, Search
 } from 'lucide-react-native';
 import Svg, { Path } from 'react-native-svg';
 import QRCode from 'react-native-qrcode-svg';
@@ -475,8 +475,25 @@ export default function App() {
 
   const AlertsContent = () => (
     <View style={styles.contentArea}>
-      <Text style={styles.sectionTitle}>MY ALERTS</Text>
-      <Text style={{color: '#666', marginTop: 20}}>You have 0 active alerts right now. All clear!</Text>
+      <Text style={styles.sectionTitle}>{t('alerts')}</Text>
+      {!data?.recentAlerts || data.recentAlerts.length === 0 ? (
+        <View style={[styles.actionCard, {height: 'auto', paddingVertical: 24, flexDirection: 'column', alignItems: 'center'}]}>
+          <ShieldAlert size={40} color="#E60000" style={{marginBottom: 16}} />
+          <Text style={{color: '#666', fontWeight: 'bold'}}>{t('allOps')}</Text>
+        </View>
+      ) : (
+        data.recentAlerts.map((alert: any) => (
+          <View key={alert.id} style={[styles.actionCard, {height: 'auto', paddingVertical: 16, flexDirection: 'column', alignItems: 'flex-start', borderLeftWidth: 4, borderLeftColor: '#E60000', marginBottom: 16}]}>
+            <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 8}}>
+              <AlertTriangle size={16} color="#E60000" style={{marginRight: 6}} />
+              <Text style={{fontWeight: 'bold', color: '#E60000', fontSize: 14}}>Suspicious Scan Activity</Text>
+            </View>
+            <Text style={[styles.actionTitle, {marginBottom: 4}]}>Batch: {alert.batchId}</Text>
+            <Text style={styles.actionDesc}>Multiple scans detected. Last seen: {alert.city || 'Unknown Location'}</Text>
+            <Text style={[styles.actionDesc, {fontSize: 10, marginTop: 8}]}>{new Date(alert.timestamp).toLocaleString()}</Text>
+          </View>
+        ))
+      )}
     </View>
   );
 
