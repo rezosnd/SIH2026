@@ -5,7 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export class AdminService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getDashboardStats() {
+  async getDashboardStats(user: any) {
     const totalHoneyAgg = await this.prisma.honeyBatch.aggregate({
       _sum: {
         quantity: true,

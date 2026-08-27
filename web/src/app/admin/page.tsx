@@ -10,7 +10,12 @@ export default function AdminDashboard() {
     async function fetchStats() {
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://sih-2026-kiit.vercel.app';
-        const res = await fetch(`${apiUrl}/admin/dashboard`);
+        const tokenRes = await fetch(`${apiUrl}/auth/dev-login?role=ADMIN`);
+        const tokenData = await tokenRes.json();
+        
+        const res = await fetch(`${apiUrl}/admin/dashboard`, {
+          headers: { Authorization: `Bearer ${tokenData.access_token}` }
+        });
         if (res.ok) {
           setStats(await res.json());
         }

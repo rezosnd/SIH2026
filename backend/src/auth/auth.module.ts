@@ -5,6 +5,7 @@ import { UsersModule } from '../users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { GoogleStrategy } from './google.strategy';
+import { JwtStrategy } from './jwt.strategy';
 
 @Module({
   imports: [
@@ -12,12 +13,12 @@ import { GoogleStrategy } from './google.strategy';
     PassportModule,
     JwtModule.register({
       global: true,
-      secret: 'super-secret-key-replace-in-production',
-      signOptions: { expiresIn: '15m' },
+      secret: process.env.JWT_SECRET || 'super-secret-key-replace-in-production',
+      signOptions: { expiresIn: '60m' },
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, GoogleStrategy],
+  providers: [AuthService, GoogleStrategy, JwtStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}

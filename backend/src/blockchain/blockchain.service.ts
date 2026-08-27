@@ -18,15 +18,27 @@ export class BlockchainService {
   constructor(private prisma: PrismaService) {
     // Defaulting to Hardhat local node for development
     const RPC_URL = process.env.BLOCKCHAIN_RPC_URL || 'http://127.0.0.1:8545';
-    const PRIVATE_KEY = process.env.BLOCKCHAIN_PRIVATE_KEY || '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'; 
+    const PRIVATE_KEY = process.env.BLOCKCHAIN_PRIVATE_KEY;
     const CONTRACT_ADDRESS = process.env.BLOCKCHAIN_CONTRACT_ADDRESS || '0x5FbDB2315678afecb367f032d93F642f64180aa3';
 
+    if (!PRIVATE_KEY) {
+      this.logger.warn('BLOCKCHAIN_PRIVATE_KEY is not set. Blockchain writes will fail.');
+    }
+
     this.provider = new ethers.JsonRpcProvider(RPC_URL);
-    this.wallet = new ethers.Wallet(PRIVATE_KEY, this.provider);
-    this.contract = new ethers.Contract(CONTRACT_ADDRESS, this.abi, this.wallet);
+    this.wallet = PRIVATE_KEY ? new ethers.Wallet(PRIVATE_KEY, this.provider) : null as any;
+    if (this.wallet) {
+       this.contract = new ethers.Contract(CONTRACT_ADDRESS, this.abi, this.wallet);
+    } else {
+       this.contract = null as any;
+    }
   }
 
   async recordBatchCreated(batchId: string, location: string) {
+    if (!this.contract) {
+      this.logger.warn(`Blockchain not configured. Skipping recordBatchCreated for ${batchId}`);
+      return null;
+    }
     try {
       this.logger.log(`Registering batch ${batchId} on-chain...`);
       const tx = await this.contract.registerBatch(batchId, location);
@@ -52,6 +64,10 @@ export class BlockchainService {
   }
 
   async recordSupplyChainEvent(batchId: string, eventType: string, location: string, ipfsHash: string = "") {
+    if (!this.contract) {
+      this.logger.warn(`Blockchain not configured. Skipping event ${eventType} for ${batchId}`);
+      return null;
+    }
     try {
       this.logger.log(`Recording event ${eventType} for batch ${batchId} on-chain...`);
       const tx = await this.contract.addBatchEvent(batchId, eventType, location, ipfsHash);

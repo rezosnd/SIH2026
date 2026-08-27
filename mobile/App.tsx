@@ -41,6 +41,7 @@ const HoneyJarIcon = ({ size = 24, color = "#000", strokeWidth = 2, ...props }: 
 export default function App() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState<string | null>(null);
   const { width } = useWindowDimensions();
   
   const isDesktop = width >= 1024;
@@ -48,10 +49,16 @@ export default function App() {
   const isLargeScreen = isDesktop || isTablet;
 
   useEffect(() => {
-    async function fetchDashboard() {
+    async function init() {
       try {
         const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'https://sih-2026-kiit.vercel.app';
-        const res = await fetch(`${apiUrl}/beekeepers/dashboard`);
+        const tokenRes = await fetch(`${apiUrl}/auth/dev-login`);
+        const tokenData = await tokenRes.json();
+        setToken(tokenData.access_token);
+        
+        const res = await fetch(`${apiUrl}/beekeepers/dashboard`, {
+          headers: { Authorization: `Bearer ${tokenData.access_token}` }
+        });
         if (res.ok) {
           setData(await res.json());
         }
@@ -61,7 +68,7 @@ export default function App() {
         setLoading(false);
       }
     }
-    fetchDashboard();
+    init();
   }, []);
 
   const BrandHeader = ({ color = '#fff' }: { color?: string }) => (
@@ -188,27 +195,236 @@ export default function App() {
     </View>
   );
 
+  const [activeTab, setActiveTab] = useState('Dashboard');
+  const [hives, setHives] = useState<any[]>([]);
+  const [batches, setBatches] = useState<any[]>([]);
+
+  // Form states
+  const [hiveLocation, setHiveLocation] = useState('');
+  const [batchQuantity, setBatchQuantity] = useState('');
+  const [selectedHiveId, setSelectedHiveId] = useState('');
+
+  const fetchHives = async () => {
+    if (!token) return;
+    try {
+      const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'https://sih-2026-kiit.vercel.app';
+      const res = await fetch(`${apiUrl}/hives`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) setHives(await res.json());
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchBatches = async () => {
+    if (!token) return;
+    try {
+      const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'https://sih-2026-kiit.vercel.app';
+      const res = await fetch(`${apiUrl}/batches`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) setBatches(await res.json());
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'Hives' || activeTab === 'CreateBatch') fetchHives();
+    if (activeTab === 'Batches') fetchBatches();
+  }, [activeTab, token]);
+
+  const handleCreateHive = async () => {
+    if (!hiveLocation) {
+      Alert.alert('Error', 'Please enter a location');
+      return;
+    }
+    try {
+      const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'https://sih-2026-kiit.vercel.app';
+      const res = await fetch(`${apiUrl}/hives`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({ location: hiveLocation, status: 'ACTIVE' })
+      });
+      if (res.ok) {
+        Alert.alert('Success', 'Hive registered successfully!');
+        setHiveLocation('');
+        setActiveTab('Hives');
+      } else {
+        Alert.alert('Error', 'Failed to register hive');
+      }
+    } catch (err) {
+      console.error(err);
+      Alert.alert('Error', 'An error occurred');
+    }
+  };
+
+  const handleCreateBatch = async () => {
+    if (!selectedHiveId || !batchQuantity) {
+      Alert.alert('Error', 'Please fill all fields');
+      return;
+    }
+    try {
+      const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'https://sih-2026-kiit.vercel.app';
+      const res = await fetch(`${apiUrl}/batches`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({ hiveId: selectedHiveId, quantity: parseFloat(batchQuantity), status: 'HARVESTED' })
+      });
+      if (res.ok) {
+        Alert.alert('Success', 'Batch created successfully!');
+        setBatchQuantity('');
+        setSelectedHiveId('');
+        setActiveTab('Batches');
+      } else {
+        Alert.alert('Error', 'Failed to create batch');
+      }
+    } catch (err) {
+      console.error(err);
+      Alert.alert('Error', 'An error occurred');
+    }
+  };
+
+  const HivesContent = () => (
+    <View style={styles.contentArea}>
+      <Text style={styles.sectionTitle}>MY HIVES</Text>
+      {hives.length === 0 ? (
+        <Text style={{color: '#666', marginTop: 20}}>No hives found.</Text>
+      ) : (
+        hives.map(hive => (
+          <View key={hive.id} style={styles.actionCard}>
+            <View style={styles.actionIconWrapperDark}>
+              <BeehiveIcon size={24} color="#FFFFFF" strokeWidth={2} />
+            </View>
+            <View style={styles.actionTextWrapper}>
+              <Text style={styles.actionTitle}>{hive.location}</Text>
+              <Text style={styles.actionDesc}>Status: {hive.status}</Text>
+            </View>
+          </View>
+        ))
+      )}
+      <TouchableOpacity 
+        style={[styles.actionCard, { marginTop: 20, backgroundColor: '#111' }]} 
+        activeOpacity={0.7}
+        onPress={() => setActiveTab('CreateHive')}
+      >
+        <Text style={[styles.actionTitle, { color: '#fff', textAlign: 'center', width: '100%' }]}>+ Register New Hive</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const CreateHiveContent = () => (
+    <View style={styles.contentArea}>
+      <Text style={styles.sectionTitle}>REGISTER NEW HIVE</Text>
+      <View style={styles.formContainer}>
+        <Text style={styles.inputLabel}>Hive Location</Text>
+        <TextInput 
+          style={styles.textInput} 
+          placeholder="e.g. North Apiary, Sector 4"
+          value={hiveLocation}
+          onChangeText={setHiveLocation}
+        />
+        <TouchableOpacity style={styles.primaryButton} onPress={handleCreateHive}>
+          <Text style={styles.primaryButtonText}>Register Hive</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.secondaryButton} onPress={() => setActiveTab('Hives')}>
+          <Text style={styles.secondaryButtonText}>Cancel</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  const CreateBatchContent = () => (
+    <View style={styles.contentArea}>
+      <Text style={styles.sectionTitle}>CREATE HONEY BATCH</Text>
+      <View style={styles.formContainer}>
+        <Text style={styles.inputLabel}>Select Source Hive</Text>
+        <ScrollView style={{maxHeight: 150, marginBottom: 16}}>
+          {hives.map(h => (
+            <TouchableOpacity 
+              key={h.id} 
+              style={[styles.hiveSelectItem, selectedHiveId === h.id && styles.hiveSelectItemSelected]}
+              onPress={() => setSelectedHiveId(h.id)}
+            >
+              <Text style={[styles.hiveSelectText, selectedHiveId === h.id && {color: '#fff'}]}>{h.location}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+        <Text style={styles.inputLabel}>Harvest Quantity (kg)</Text>
+        <TextInput 
+          style={styles.textInput} 
+          placeholder="e.g. 25"
+          keyboardType="numeric"
+          value={batchQuantity}
+          onChangeText={setBatchQuantity}
+        />
+        <TouchableOpacity style={styles.primaryButton} onPress={handleCreateBatch}>
+          <Text style={styles.primaryButtonText}>Create Batch</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.secondaryButton} onPress={() => setActiveTab('Batches')}>
+          <Text style={styles.secondaryButtonText}>Cancel</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  const BatchesContent = () => (
+    <View style={styles.contentArea}>
+      <Text style={styles.sectionTitle}>MY BATCHES</Text>
+      {batches.length === 0 ? (
+        <Text style={{color: '#666', marginTop: 20}}>No batches found.</Text>
+      ) : (
+        batches.map(batch => (
+          <View key={batch.id} style={[styles.actionCard, {height: 'auto', paddingVertical: 16, marginBottom: 12}]}>
+            <View style={styles.actionIconWrapperDark}>
+              <Package size={24} color="#FFFFFF" strokeWidth={2} />
+            </View>
+            <View style={styles.actionTextWrapper}>
+              <Text style={styles.actionTitle}>Batch {batch.id.substring(0,6).toUpperCase()}</Text>
+              <Text style={styles.actionDesc}>Status: {batch.status}</Text>
+              <Text style={styles.actionDesc}>Qty: {batch.quantity}kg</Text>
+            </View>
+          </View>
+        ))
+      )}
+      <TouchableOpacity 
+        style={[styles.actionCard, { marginTop: 20, backgroundColor: '#111' }]} 
+        activeOpacity={0.7}
+        onPress={() => setActiveTab('CreateBatch')}
+      >
+        <Text style={[styles.actionTitle, { color: '#fff', textAlign: 'center', width: '100%' }]}>+ Create Honey Batch</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   const MobileBottomNav = () => (
     <View style={styles.bottomNav}>
-      <TouchableOpacity style={styles.navItemActive}>
-        <Home size={22} color="#FFFFFF" strokeWidth={2} />
-        <Text style={styles.navTextActive}>Dashboard</Text>
+      <TouchableOpacity style={activeTab === 'Dashboard' ? styles.navItemActive : styles.navItem} onPress={() => setActiveTab('Dashboard')}>
+        <Home size={22} color={activeTab === 'Dashboard' ? "#FFFFFF" : "#999999"} strokeWidth={2} />
+        <Text style={activeTab === 'Dashboard' ? styles.navTextActive : styles.navText}>Dashboard</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.navItem}>
-        <BeehiveIcon size={24} color="#999999" strokeWidth={2} />
-        <Text style={styles.navText}>Hives</Text>
+      <TouchableOpacity style={activeTab === 'Hives' ? styles.navItemActive : styles.navItem} onPress={() => setActiveTab('Hives')}>
+        <BeehiveIcon size={24} color={activeTab === 'Hives' ? "#FFFFFF" : "#999999"} strokeWidth={2} />
+        <Text style={activeTab === 'Hives' ? styles.navTextActive : styles.navText}>Hives</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.navItem}>
-        <Package size={24} color="#999999" strokeWidth={2} />
-        <Text style={styles.navText}>Batches</Text>
+      <TouchableOpacity style={activeTab === 'Batches' ? styles.navItemActive : styles.navItem} onPress={() => setActiveTab('Batches')}>
+        <Package size={24} color={activeTab === 'Batches' ? "#FFFFFF" : "#999999"} strokeWidth={2} />
+        <Text style={activeTab === 'Batches' ? styles.navTextActive : styles.navText}>Batches</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.navItem}>
-        <Bell size={24} color="#999999" strokeWidth={2} />
-        <Text style={styles.navText}>Alerts</Text>
+      <TouchableOpacity style={activeTab === 'Alerts' ? styles.navItemActive : styles.navItem} onPress={() => setActiveTab('Alerts')}>
+        <Bell size={24} color={activeTab === 'Alerts' ? "#FFFFFF" : "#999999"} strokeWidth={2} />
+        <Text style={activeTab === 'Alerts' ? styles.navTextActive : styles.navText}>Alerts</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.navItem}>
-        <User size={24} color="#999999" strokeWidth={2} />
-        <Text style={styles.navText}>Profile</Text>
+      <TouchableOpacity style={activeTab === 'Profile' ? styles.navItemActive : styles.navItem} onPress={() => setActiveTab('Profile')}>
+        <User size={24} color={activeTab === 'Profile' ? "#FFFFFF" : "#999999"} strokeWidth={2} />
+        <Text style={activeTab === 'Profile' ? styles.navTextActive : styles.navText}>Profile</Text>
       </TouchableOpacity>
     </View>
   );
@@ -219,26 +435,26 @@ export default function App() {
         <BrandHeader color="#111" />
       </View>
       <View style={styles.sidebarNav}>
-        <TouchableOpacity style={styles.sidebarItemActive}>
-          <Home size={20} color="#111111" strokeWidth={2} />
-          <Text style={styles.sidebarTextActive}>Dashboard</Text>
+        <TouchableOpacity style={activeTab === 'Dashboard' ? styles.sidebarItemActive : styles.sidebarItem} onPress={() => setActiveTab('Dashboard')}>
+          <Home size={20} color={activeTab === 'Dashboard' ? "#111111" : "#6B6B6B"} strokeWidth={2} />
+          <Text style={activeTab === 'Dashboard' ? styles.sidebarTextActive : styles.sidebarText}>Dashboard</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.sidebarItem}>
-          <BeehiveIcon size={20} color="#6B6B6B" strokeWidth={2} />
-          <Text style={styles.sidebarText}>Hives</Text>
+        <TouchableOpacity style={activeTab === 'Hives' ? styles.sidebarItemActive : styles.sidebarItem} onPress={() => setActiveTab('Hives')}>
+          <BeehiveIcon size={20} color={activeTab === 'Hives' ? "#111111" : "#6B6B6B"} strokeWidth={2} />
+          <Text style={activeTab === 'Hives' ? styles.sidebarTextActive : styles.sidebarText}>Hives</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.sidebarItem}>
-          <Package size={20} color="#6B6B6B" strokeWidth={2} />
-          <Text style={styles.sidebarText}>Batches</Text>
+        <TouchableOpacity style={activeTab === 'Batches' ? styles.sidebarItemActive : styles.sidebarItem} onPress={() => setActiveTab('Batches')}>
+          <Package size={20} color={activeTab === 'Batches' ? "#111111" : "#6B6B6B"} strokeWidth={2} />
+          <Text style={activeTab === 'Batches' ? styles.sidebarTextActive : styles.sidebarText}>Batches</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.sidebarItem}>
-          <Bell size={20} color="#6B6B6B" strokeWidth={2} />
-          <Text style={styles.sidebarText}>Alerts</Text>
+        <TouchableOpacity style={activeTab === 'Alerts' ? styles.sidebarItemActive : styles.sidebarItem} onPress={() => setActiveTab('Alerts')}>
+          <Bell size={20} color={activeTab === 'Alerts' ? "#111111" : "#6B6B6B"} strokeWidth={2} />
+          <Text style={activeTab === 'Alerts' ? styles.sidebarTextActive : styles.sidebarText}>Alerts</Text>
         </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.sidebarItem}>
-        <User size={20} color="#6B6B6B" strokeWidth={2} />
-        <Text style={styles.sidebarText}>Profile</Text>
+      <TouchableOpacity style={activeTab === 'Profile' ? styles.sidebarItemActive : styles.sidebarItem} onPress={() => setActiveTab('Profile')}>
+        <User size={20} color={activeTab === 'Profile' ? "#111111" : "#6B6B6B"} strokeWidth={2} />
+        <Text style={activeTab === 'Profile' ? styles.sidebarTextActive : styles.sidebarText}>Profile</Text>
       </TouchableOpacity>
     </View>
   );
@@ -260,7 +476,9 @@ export default function App() {
                 <TopControls isDark={true} />
               </View>
               <ScrollView style={styles.scrollArea} contentContainerStyle={styles.desktopScrollInner}>
-                <DashboardContent />
+                {activeTab === 'Dashboard' && <DashboardContent />}
+                {activeTab === 'Hives' && <HivesContent />}
+                {activeTab === 'Batches' && <BatchesContent />}
               </ScrollView>
             </View>
           </View>
@@ -269,7 +487,9 @@ export default function App() {
             <ScrollView style={styles.scrollArea} contentContainerStyle={styles.mobileScrollInner} bounces={false}>
               <MobileHero />
               <View style={styles.mobileContentWrapper}>
-                <DashboardContent />
+                {activeTab === 'Dashboard' && <DashboardContent />}
+                {activeTab === 'Hives' && <HivesContent />}
+                {activeTab === 'Batches' && <BatchesContent />}
               </View>
             </ScrollView>
             <MobileBottomNav />

@@ -11,7 +11,14 @@ export class BatchesService {
     private blockchain: BlockchainService
   ) {}
 
-  async create(data: Prisma.HoneyBatchUncheckedCreateInput) {
+  async create(data: Prisma.HoneyBatchUncheckedCreateInput, user: any) {
+    if (user.role === 'BEEKEEPER') {
+      const profile = await this.prisma.beekeeperProfile.findUnique({ where: { userId: user.id } });
+      if (!profile) {
+        throw new Error('Beekeeper profile not found');
+      }
+      data.beekeeperId = profile.id;
+    }
     const qrData = crypto.randomUUID();
     const batch = await this.prisma.honeyBatch.create({
       data: { ...data, qrData },
@@ -25,20 +32,32 @@ export class BatchesService {
     return batch;
   }
 
-  findAll() {
+  async findAll(user: any) {
+    const where: any = {};
+    if (user.role === 'BEEKEEPER') {
+      where.beekeeper = { userId: user.id };
+    }
     return this.prisma.honeyBatch.findMany({
+      where,
       include: { hive: true, containers: true },
     });
   }
 
-  findOne(id: string) {
-    return this.prisma.honeyBatch.findUnique({
+  async findOne(id: string, user: any) {
+    const batch = await this.prisma.honeyBatch.findUnique({
       where: { id },
-      include: { hive: true, events: true, qualityRecords: true, containers: true },
+      include: { hive: { include: { beekeeper: true } }, events: true, qualityRecords: true, containers: true },
     });
+    if (!batch) return null;
+    if (user.role === 'BEEKEEPER' && batch.hive.beekeeper.userId !== user.id) {
+       throw new Error('Unauthorized');
+    }
+    return batch;
   }
 
-  update(id: string, data: Prisma.HoneyBatchUpdateInput) {
+  async update(id: string, data: Prisma.HoneyBatchUpdateInput, user: any) {
+    const batch = await this.findOne(id, user); // checks auth implicitly
+    if (!batch) throw new Error('Not found');
     return this.prisma.honeyBatch.update({ where: { id }, data });
   }
 

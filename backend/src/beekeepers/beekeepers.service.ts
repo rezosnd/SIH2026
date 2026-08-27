@@ -5,10 +5,9 @@ import { PrismaService } from '../prisma/prisma.service';
 export class BeekeepersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getDashboard() {
-    // For this demonstration, fetch the first available Beekeeper
-    // In production, this would use JWT extract user ID to find the correct profile
-    const profile = await this.prisma.beekeeperProfile.findFirst({
+  async getDashboard(user: any) {
+    const profile = await this.prisma.beekeeperProfile.findUnique({
+      where: { userId: user.id },
       include: {
         user: {
           include: {

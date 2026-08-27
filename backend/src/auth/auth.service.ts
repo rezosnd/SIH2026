@@ -24,4 +24,12 @@ export class AuthService {
       access_token: await this.jwtService.signAsync(payload),
     };
   }
+
+  async generateJwtForGoogleUser(user: any) {
+    // user comes from GoogleStrategy via UsersService
+    const payload = { sub: user.id, email: user.email, role: user.role };
+    return {
+      access_token: await this.jwtService.signAsync(payload),
+    };
+  }
 }

@@ -16,16 +16,20 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
 
   async validate(accessToken: string, refreshToken: string, profile: any, done: VerifyCallback): Promise<any> {
     const { name, emails, photos } = profile;
+    
+    // Actually find or create the user in the database
+    const dbUser = await this.usersService.findOrCreateGoogleUser(
+      emails[0].value,
+      name?.givenName || 'Google',
+      name?.familyName || 'User'
+    );
+
     const user = {
-      email: emails[0].value,
-      firstName: name.givenName,
-      lastName: name.familyName,
-      picture: photos[0].value,
+      ...dbUser,
+      picture: photos?.[0]?.value,
       accessToken
     };
     
-    // Here we delegate the actual findOrCreate logic to UsersService
-    // and pass the verified identity via the done callback
     done(null, user);
   }
 }
