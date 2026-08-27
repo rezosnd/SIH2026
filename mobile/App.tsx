@@ -39,6 +39,9 @@ const HoneyJarIcon = ({ size = 24, color = "#000", strokeWidth = 2, ...props }: 
   </Svg>
 );
 
+const API = 'https://sih-2026-kiit.vercel.app';
+const getAuthHeaders = (t: string) => ({ Authorization: `Bearer ${t}` });
+
 export default function App() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -52,13 +55,12 @@ export default function App() {
   useEffect(() => {
     async function init() {
       try {
-        const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'https://sih-2026-kiit.vercel.app';
-        const tokenRes = await fetch(`${apiUrl}/auth/dev-login`);
+        const tokenRes = await fetch(`${API}/auth/dev-login`);
         const tokenData = await tokenRes.json();
         setToken(tokenData.access_token);
         
-        const res = await fetch(`${apiUrl}/beekeepers/dashboard`, {
-          headers: { Authorization: `Bearer ${tokenData.access_token}` }
+        const res = await fetch(`${API}/beekeepers/dashboard`, {
+          headers: getAuthHeaders(tokenData.access_token)
         });
         if (res.ok) {
           setData(await res.json());
@@ -209,9 +211,8 @@ export default function App() {
   const fetchHives = async () => {
     if (!token) return;
     try {
-      const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'https://sih-2026-kiit.vercel.app';
-      const res = await fetch(`${apiUrl}/hives`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const res = await fetch(`${API}/hives`, {
+        headers: getAuthHeaders(token!)
       });
       if (res.ok) setHives(await res.json());
     } catch (err) {
@@ -222,9 +223,8 @@ export default function App() {
   const fetchBatches = async () => {
     if (!token) return;
     try {
-      const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'https://sih-2026-kiit.vercel.app';
-      const res = await fetch(`${apiUrl}/batches`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const res = await fetch(`${API}/batches`, {
+        headers: getAuthHeaders(token!)
       });
       if (res.ok) setBatches(await res.json());
     } catch (err) {
@@ -235,10 +235,8 @@ export default function App() {
   const fetchContainers = async () => {
     if (!token) return;
     try {
-      const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'https://sih-2026-kiit.vercel.app';
-      // Fetch all batches with their containers
-      const res = await fetch(`${apiUrl}/batches`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const res = await fetch(`${API}/batches`, {
+        headers: getAuthHeaders(token!)
       });
       if (res.ok) {
         const batchList = await res.json();
@@ -271,14 +269,10 @@ export default function App() {
       return;
     }
     try {
-      const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'https://sih-2026-kiit.vercel.app';
-      const res = await fetch(`${apiUrl}/hives`, {
+      const res = await fetch(`${API}/hives`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` 
-        },
-        body: JSON.stringify({ location: hiveLocation, status: 'ACTIVE' })
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders(token!) },
+        body: JSON.stringify({ location: hiveLocation, flora: 'wildflower' }),
       });
       if (res.ok) {
         Alert.alert('Success', 'Hive registered successfully!');
@@ -299,13 +293,9 @@ export default function App() {
       return;
     }
     try {
-      const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'https://sih-2026-kiit.vercel.app';
-      const res = await fetch(`${apiUrl}/batches`, {
+      const res = await fetch(`${API}/batches`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` 
-        },
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders(token!) },
         body: JSON.stringify({ hiveId: selectedHiveId, quantity: parseFloat(batchQuantity), status: 'HARVESTED' })
       });
       if (res.ok) {
