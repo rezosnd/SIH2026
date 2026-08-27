@@ -273,7 +273,7 @@ export default function App() {
       const res = await fetch(`${API}/hives`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...getAuthHeaders(token!) },
-        body: JSON.stringify({ location: hiveLocation, flora: 'wildflower' }),
+        body: JSON.stringify({ location: hiveLocation }),
       });
       if (res.ok) {
         Alert.alert('Success', 'Hive registered successfully!');
@@ -526,6 +526,27 @@ export default function App() {
                 {activeTab === 'Batches' && <BatchesContent />}
                 {activeTab === 'CreateBatch' && <CreateBatchContent />}
                 {activeTab === 'Containers' && <ContainersContent />}
+                {activeTab === 'Alerts' && (
+                  <View style={styles.contentArea}>
+                    <Text style={styles.sectionTitle}>MY ALERTS</Text>
+                    <Text style={{color: '#666', marginTop: 20}}>You have 0 active alerts right now. All clear!</Text>
+                  </View>
+                )}
+                {activeTab === 'Profile' && (
+                  <View style={styles.contentArea}>
+                    <Text style={styles.sectionTitle}>MY PROFILE</Text>
+                    <View style={[styles.actionCard, {height: 'auto', paddingVertical: 24, flexDirection: 'column', alignItems: 'center'}]}>
+                      <View style={{width: 80, height: 80, borderRadius: 40, backgroundColor: '#111', justifyContent: 'center', alignItems: 'center', marginBottom: 16}}>
+                        <User size={40} color="#fff" />
+                      </View>
+                      <Text style={[styles.actionTitle, {fontSize: 20}]}>{data?.name || 'Beekeeper'}</Text>
+                      <Text style={[styles.actionDesc, {marginTop: 4}]}>{data?.cluster || 'Unknown Cluster'}</Text>
+                      <TouchableOpacity style={[styles.primaryButton, {marginTop: 24, width: '100%'}]} onPress={() => setToken(null)}>
+                        <Text style={styles.primaryButtonText}>Sign Out</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
               </ScrollView>
             </View>
           </View>
@@ -540,6 +561,31 @@ export default function App() {
                 {activeTab === 'Batches' && <BatchesContent />}
                 {activeTab === 'CreateBatch' && <CreateBatchContent />}
                 {activeTab === 'Containers' && <ContainersContent />}
+                {activeTab === 'Alerts' && (
+                  <View style={styles.contentArea}>
+                    <Text style={styles.sectionTitle}>MY ALERTS</Text>
+                    <Text style={{color: '#666', marginTop: 20}}>You have 0 active alerts right now. All clear!</Text>
+                  </View>
+                )}
+                {activeTab === 'Profile' && (
+                  <View style={styles.contentArea}>
+                    <Text style={styles.sectionTitle}>MY PROFILE</Text>
+                    <View style={[styles.actionCard, {height: 'auto', paddingVertical: 24, flexDirection: 'column', alignItems: 'center'}]}>
+                      <View style={{width: 80, height: 80, borderRadius: 40, backgroundColor: '#111', justifyContent: 'center', alignItems: 'center', marginBottom: 16}}>
+                        <User size={40} color="#fff" />
+                      </View>
+                      <Text style={[styles.actionTitle, {fontSize: 20}]}>{data?.name || 'Beekeeper'}</Text>
+                      <Text style={[styles.actionDesc, {marginTop: 4}]}>{data?.cluster || 'Unknown Cluster'}</Text>
+                      
+                      <TouchableOpacity 
+                        style={[styles.primaryButton, {marginTop: 24, width: '100%'}]} 
+                        onPress={() => setToken(null)}
+                      >
+                        <Text style={styles.primaryButtonText}>Sign Out</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
               </View>
             </ScrollView>
             <MobileBottomNav />
