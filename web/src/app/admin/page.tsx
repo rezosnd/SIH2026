@@ -464,58 +464,59 @@ export default function AdminDashboard() {
               </div>
 
               {aiAnalysis && (
-                <div className="mt-6 bg-gray-900 rounded-xl p-6 text-white shadow-xl">
-                  <div className="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
+                <div className="mt-6 bg-white rounded-xl p-8 border border-gray-200 shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-black"></div>
+                  <div className="flex justify-between items-center mb-8 border-b border-gray-100 pb-6">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
-                        <span className="text-blue-400 font-black">AI</span>
+                      <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center border border-gray-200">
+                        <span className="text-gray-900 font-black text-xs">AI</span>
                       </div>
-                      <h3 className="font-black text-lg tracking-wider">GROQ AI ASSESSMENT</h3>
+                      <h3 className="font-black text-gray-900 tracking-wider text-sm">GROQ AI ASSESSMENT</h3>
                     </div>
                     {aiAnalysis.aiAssessment?.environmentStatus && (
-                      <span className={`px-3 py-1 text-xs font-black rounded ${
-                        aiAnalysis.aiAssessment.environmentStatus === 'Critical' ? 'bg-red-500/20 text-red-400' : 
-                        aiAnalysis.aiAssessment.environmentStatus === 'Warning' ? 'bg-orange-500/20 text-orange-400' : 
-                        'bg-green-500/20 text-green-400'
+                      <span className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full border ${
+                        aiAnalysis.aiAssessment.environmentStatus === 'Critical' ? 'bg-red-50 text-red-700 border-red-200' : 
+                        aiAnalysis.aiAssessment.environmentStatus === 'Warning' ? 'bg-orange-50 text-orange-700 border-orange-200' : 
+                        'bg-green-50 text-green-700 border-green-200'
                       }`}>
-                        {aiAnalysis.aiAssessment.environmentStatus.toUpperCase()} (CONF: {aiAnalysis.aiAssessment.confidence}%)
+                        {aiAnalysis.aiAssessment.environmentStatus} • {aiAnalysis.aiAssessment.confidence}% CONFIDENCE
                       </span>
                     )}
                   </div>
 
                   {aiAnalysis.aiAssessment?.error ? (
-                    <p className="text-red-400 font-semibold">{aiAnalysis.aiAssessment.error}</p>
+                    <p className="text-red-500 font-bold">{aiAnalysis.aiAssessment.error}</p>
                   ) : aiAnalysis.aiAssessment?.summary ? (
-                    <div className="space-y-6 text-sm">
+                    <div className="space-y-8">
                       <div>
-                        <h4 className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-2">Summary</h4>
-                        <p className="text-gray-100 leading-relaxed">{aiAnalysis.aiAssessment.summary}</p>
+                        <h4 className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-3">Executive Summary</h4>
+                        <p className="text-gray-800 leading-relaxed font-medium text-sm">{aiAnalysis.aiAssessment.summary}</p>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-6">
-                        <div>
-                          <h4 className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-2">Alerts & Issues</h4>
-                          <ul className="space-y-1">
-                            {aiAnalysis.aiAssessment.alerts?.map((a: string, i: number) => <li key={i} className="text-red-300 flex items-start gap-2"><span className="text-red-500">•</span> {a}</li>)}
-                            {aiAnalysis.aiAssessment.sensorIssues?.map((a: string, i: number) => <li key={i} className="text-orange-300 flex items-start gap-2"><span className="text-orange-500">•</span> {a}</li>)}
-                            {(!aiAnalysis.aiAssessment.alerts?.length && !aiAnalysis.aiAssessment.sensorIssues?.length) && <li className="text-gray-500">None</li>}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
+                          <h4 className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-4">Alerts & Issues</h4>
+                          <ul className="space-y-3">
+                            {aiAnalysis.aiAssessment.alerts?.map((a: string, i: number) => <li key={i} className="text-gray-700 text-sm flex items-start gap-3"><span className="text-red-500 font-black mt-0.5">•</span> <span>{a}</span></li>)}
+                            {aiAnalysis.aiAssessment.sensorIssues?.map((a: string, i: number) => <li key={i} className="text-gray-700 text-sm flex items-start gap-3"><span className="text-orange-400 font-black mt-0.5">•</span> <span>{a}</span></li>)}
+                            {(!aiAnalysis.aiAssessment.alerts?.length && !aiAnalysis.aiAssessment.sensorIssues?.length) && <li className="text-gray-400 text-sm font-semibold">No critical issues detected.</li>}
                           </ul>
                         </div>
-                        <div>
-                          <h4 className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-2">Recommendations</h4>
-                          <ul className="space-y-1">
-                            {aiAnalysis.aiAssessment.recommendations?.map((r: string, i: number) => <li key={i} className="text-green-300 flex items-start gap-2"><span className="text-green-500">•</span> {r}</li>)}
+                        <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
+                          <h4 className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-4">Recommended Actions</h4>
+                          <ul className="space-y-3">
+                            {aiAnalysis.aiAssessment.recommendations?.map((r: string, i: number) => <li key={i} className="text-gray-700 text-sm flex items-start gap-3"><span className="text-black font-black mt-0.5">→</span> <span>{r}</span></li>)}
                           </ul>
                         </div>
                       </div>
 
-                      <div className="pt-4 border-t border-gray-800">
-                        <h4 className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-2">AI Reasoning</h4>
-                        <p className="text-gray-300 leading-relaxed italic">{aiAnalysis.aiAssessment.reasoning}</p>
+                      <div className="pt-6 border-t border-gray-100">
+                        <h4 className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-3">AI Reasoning</h4>
+                        <p className="text-gray-500 text-sm leading-relaxed">{aiAnalysis.aiAssessment.reasoning}</p>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-gray-500 italic">No valid AI response.</p>
+                    <p className="text-gray-400 font-medium">No valid AI response generated.</p>
                   )}
                 </div>
               )}
