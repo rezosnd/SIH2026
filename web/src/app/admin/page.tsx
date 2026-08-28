@@ -387,12 +387,12 @@ export default function AdminDashboard() {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                  <MetricCard label="Temperature" value={`${selectedHive.current.temperature} °C`} />
-                  <MetricCard label="Humidity" value={`${selectedHive.current.humidity} %`} />
-                  <MetricCard label="Pressure" value={`${selectedHive.current.pressure} hPa`} />
-                  <MetricCard label="Rain" value={selectedHive.current.rain ? 'DETECTED' : 'NO RAIN'} />
-                  <MetricCard label="UV" value={selectedHive.current.uv || 'N/A'} />
-                  <MetricCard label="Weight" value={selectedHive.current.weight ? `${selectedHive.current.weight} kg` : 'N/A'} color={!selectedHive.current.weight ? "text-red-500" : ""} />
+                  <MetricCard label="Temperature" value={selectedHive.current.temperature != null ? `${selectedHive.current.temperature} °C` : 'N/A'} color={selectedHive.current.temperature == null ? "text-red-500" : ""} />
+                  <MetricCard label="Humidity" value={selectedHive.current.humidity != null ? `${selectedHive.current.humidity} %` : 'N/A'} color={selectedHive.current.humidity == null ? "text-red-500" : ""} />
+                  <MetricCard label="Pressure" value={selectedHive.current.pressure != null ? `${selectedHive.current.pressure} hPa` : 'N/A'} color={selectedHive.current.pressure == null ? "text-red-500" : ""} />
+                  <MetricCard label="Rain" value={selectedHive.current.rain != null ? (selectedHive.current.rain ? 'DETECTED' : 'NO RAIN') : 'N/A'} />
+                  <MetricCard label="UV" value={selectedHive.current.uv != null ? selectedHive.current.uv : 'N/A'} color={selectedHive.current.uv == null ? "text-red-500" : ""} />
+                  <MetricCard label="Weight" value={selectedHive.current.weight != null ? `${selectedHive.current.weight} kg` : 'N/A'} color={selectedHive.current.weight == null ? "text-red-500" : ""} />
                 </div>
               )}
 
