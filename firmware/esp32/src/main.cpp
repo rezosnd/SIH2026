@@ -1,4 +1,5 @@
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <HTTPClient.h>
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
@@ -39,7 +40,7 @@ const char* HIVE_ID = "HIVE-2026-0001";
 
 // Change this to your deployed backend URL (e.g., https://your-app.vercel.app)
 // For local testing on the same WiFi network, use your computer's IP address (e.g., http://192.168.1.5:3001)
-const char* API_URL = "http://YOUR_BACKEND_IP_OR_URL:3001"; 
+const char* API_URL = "https://sih-2026-kiit.vercel.app"; 
 
 // -----------------------------------------
 // NETWORK CONFIGURATION
@@ -145,6 +146,7 @@ void loop() {
     sensors["rainRaw"] = rainRaw;
     sensors["uvRaw"] = uvRaw;
     sensors["uvVoltage"] = uvVoltage;
+    sensors["uv"] = uvVoltage; // Correct key mapping for backend
     sensors["lm393"] = lm393Raw;
     
     // if scale connected:
@@ -154,11 +156,14 @@ void loop() {
     char buffer[500];
     serializeJson(doc, buffer);
 
-    // Make HTTP POST Request
+    // Make HTTPS POST Request
+    WiFiClientSecure client;
+    client.setInsecure(); // Required for HTTPS without providing Root CA
+
     HTTPClient http;
     String url = String(API_URL) + "/iot/hives/" + HIVE_ID + "/telemetry";
     
-    http.begin(url);
+    http.begin(client, url);
     http.addHeader("Content-Type", "application/json");
     
     Serial.println("[HTTP] Sending Telemetry to: " + url);

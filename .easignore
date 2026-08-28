@@ -1,0 +1,13 @@
+# Ignore everything outside the mobile folder to prevent EAS from crashing and running out of disk space
+backend/
+web/
+firmware/
+docs/
+.git/
+.agents/
+.gemini/
+*.log
+
+# Mobile ignores
+mobile/node_modules/
+mobile/.expo/
