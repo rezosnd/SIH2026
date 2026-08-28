@@ -41,7 +41,7 @@ export class AdminService {
 
     const totalHives = await this.prisma.hive.count();
     
-    const twoMinsAgo = new Date(new Date().getTime() - 2592000000);
+    const twoMinsAgo = new Date(new Date().getTime() - 120000);
     const activeDevices = await this.prisma.ioTDevice.count({
       where: {
         lastSeenAt: {
