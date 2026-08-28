@@ -25,4 +25,4 @@
     "web": "expo start --web"
   },
   "private": true
-},
+}
