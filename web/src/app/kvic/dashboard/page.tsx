@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from 'react';
-import { BarChart3, Users, Hexagon, Package, ShieldAlert, Activity, AlertTriangle, ChevronRight, TrendingUp, XCircle, Plus, Droplet, Search, ShieldCheck, Map, MapPin, Loader2, Cpu } from 'lucide-react';
+import { BarChart3, Users, Hexagon, Package, ShieldAlert, Activity, AlertTriangle, ChevronRight, TrendingUp, XCircle, Plus, Droplet, Search, ShieldCheck, Map, MapPin, Loader2, Cpu, Eye, CheckCircle } from 'lucide-react';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://sih-2026-kiit.vercel.app';
 
@@ -37,7 +37,7 @@ export default function KvicDashboard() {
 
   useEffect(() => {
     if (!token) return;
-    const headers = { Authorization: `Bearer ${t}` };
+    const headers = { Authorization: `Bearer ${token}` };
     const endpoints: Record<string, string> = {
       clusters: '/kvic/clusters',
       beekeepers: '/kvic/beekeepers',
