@@ -247,7 +247,7 @@ export default function KvicDashboard() {
                   </thead>
                   <tbody className="divide-y divide-[#E7E7E7]">
                     {loading ? (
-                      <SkeletonRow /><SkeletonRow /><SkeletonRow />
+                      <><SkeletonRow /><SkeletonRow /><SkeletonRow /></>
                     ) : (Array.isArray(data) ? data : []).length === 0 ? (
                       <tr><td colSpan={5} className="px-8 py-16 text-center text-[#777777] font-medium text-[14px]">No clusters found in the national registry.</td></tr>
                     ) : (Array.isArray(data) ? data : []).map((c: any) => (
