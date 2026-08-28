@@ -17,6 +17,9 @@ export default function KvicDashboard() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState('');
+  const [selectedHive, setSelectedHive] = useState<any>(null);
+  const [aiAnalysis, setAiAnalysis] = useState<any>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [newBk, setNewBk] = useState({ name: '', email: '', password: '', farmLocation: '', contact: '' });
@@ -72,6 +75,31 @@ export default function KvicDashboard() {
     }
   };
 
+  const fetchHiveDetails = async (id: string) => {
+    try {
+      const res = await fetch(`${API}/iot/hives/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      if (res.ok) {
+        setSelectedHive(await res.json());
+        setActiveSection('iot_details');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const fetchAiAnalysis = async (hiveId: string) => {
+    setIsAnalyzing(true);
+    setAiAnalysis(null);
+    try {
+      const res = await fetch(`${API}/iot/hives/${hiveId}/analysis`, { headers: { Authorization: `Bearer ${token}` } });
+      if (res.ok) setAiAnalysis(await res.json());
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   const handleLogout = () => {
     // In a real app, clear cookies/tokens
     window.location.href = '/';
@@ -95,7 +123,12 @@ export default function KvicDashboard() {
     </div>
   );
 
-
+  const MetricCard = ({ label, value, color = 'text-gray-900' }: any) => (
+    <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 flex flex-col items-center justify-center text-center">
+      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">{label}</span>
+      <span className={`text-xl font-black ${color}`}>{value}</span>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-[#f3f4f6] flex font-sans">
@@ -216,7 +249,7 @@ export default function KvicDashboard() {
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
-                    {['Location', 'Status', 'IoT Connection', 'Temp / Hum', 'Beekeeper', 'Total Batches'].map(h => (
+                    {['Location', 'Status', 'IoT Connection', 'Temp / Hum', 'Beekeeper', 'Total Batches', 'Actions'].map(h => (
                       <th key={h} className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">{h}</th>
                     ))}
                   </tr>
@@ -249,11 +282,160 @@ export default function KvicDashboard() {
                       </td>
                       <td className="px-5 py-4 text-gray-600">{h.beekeeper?.name || '—'}</td>
                       <td className="px-5 py-4 font-bold">{h.batches?.length ?? 0}</td>
+                      <td className="px-5 py-4">
+                        <button onClick={() => fetchHiveDetails(h.id)} className="px-3 py-1 bg-black text-white rounded text-xs font-bold hover:bg-gray-800 transition-colors">
+                          VIEW DETAILS
+                        </button>
+                      </td>
                     </tr>
                     );
                   })}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {activeSection === 'iot_details' && selectedHive && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center mb-4">
+                <button onClick={() => { setActiveSection('hives'); setAiAnalysis(null); }} className="text-sm font-bold text-gray-500 hover:text-black flex items-center">
+                  ← Back to Hive List
+                </button>
+                <button 
+                  onClick={() => fetchAiAnalysis(selectedHive.id)}
+                  disabled={isAnalyzing}
+                  className="bg-black text-white px-4 py-2 rounded-md font-bold text-sm hover:bg-gray-800 disabled:bg-gray-400"
+                >
+                  {isAnalyzing ? 'Analyzing...' : 'Run AI Environment Analysis'}
+                </button>
+              </div>
+              
+              <div className="bg-white rounded-xl border border-gray-200 p-6 flex justify-between items-center shadow-sm">
+                <div>
+                  <h2 className="text-2xl font-black text-gray-900">{selectedHive.location.toUpperCase()}</h2>
+                  <p className="text-sm text-gray-500 mt-1 font-semibold">Registered: {new Date(selectedHive.registrationDate).toLocaleDateString()}</p>
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-2 mb-1 justify-end">
+                    <div className={`w-2.5 h-2.5 rounded-full ${selectedHive.device?.status === 'ONLINE' ? 'bg-green-500' : 'bg-red-500'}`} />
+                    <span className={`font-bold ${selectedHive.device?.status === 'ONLINE' ? 'text-green-600' : 'text-red-600'}`}>{selectedHive.device?.status || 'OFFLINE'}</span>
+                  </div>
+                  <p className="text-xs text-gray-400 font-mono font-bold">{selectedHive.device?.deviceId || 'NO DEVICE CONNECTED'}</p>
+                </div>
+              </div>
+
+              {!selectedHive.current ? (
+                <div className="bg-red-50 border border-red-100 rounded-xl p-8 flex flex-col items-center justify-center">
+                  <AlertTriangle className="w-12 h-12 text-red-400 mb-4" />
+                  <h3 className="text-lg font-black text-red-600 mb-2">NO SENSOR READINGS AVAILABLE</h3>
+                  <p className="text-red-500 font-medium">Connect the physical ESP32 device to this hive to begin monitoring.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                  <MetricCard label="Temperature" value={selectedHive.current.temperature != null ? `${selectedHive.current.temperature} °C` : 'N/A'} color={selectedHive.current.temperature == null ? "text-red-500" : ""} />
+                  <MetricCard label="Humidity" value={selectedHive.current.humidity != null ? `${selectedHive.current.humidity} %` : 'N/A'} color={selectedHive.current.humidity == null ? "text-red-500" : ""} />
+                  <MetricCard label="Pressure" value={selectedHive.current.pressure != null ? `${selectedHive.current.pressure} hPa` : 'N/A'} color={selectedHive.current.pressure == null ? "text-red-500" : ""} />
+                  <MetricCard label="Rain" value={selectedHive.current.rain != null ? (selectedHive.current.rain ? 'DETECTED' : 'NO RAIN') : 'N/A'} />
+                  <MetricCard label="UV" value={selectedHive.current.uv != null ? selectedHive.current.uv : 'N/A'} color={selectedHive.current.uv == null ? "text-red-500" : ""} />
+                  <MetricCard label="Weight" value={selectedHive.current.weight != null ? `${selectedHive.current.weight} kg` : 'N/A'} color={selectedHive.current.weight == null ? "text-red-500" : ""} />
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Sensor Health Status</h3>
+                  <div className="space-y-4">
+                    {[
+                      { name: 'DHT11', status: selectedHive.device?.status === 'OFFLINE' ? 'OFFLINE' : (selectedHive.current?.temperature != null ? 'ONLINE' : 'ERROR') },
+                      { name: 'BMP180', status: selectedHive.device?.status === 'OFFLINE' ? 'OFFLINE' : (selectedHive.current?.pressure != null ? 'ONLINE' : 'ERROR') },
+                      { name: 'Rain Drop', status: selectedHive.device?.status === 'OFFLINE' ? 'OFFLINE' : (selectedHive.current?.rain !== undefined ? 'ONLINE' : 'ERROR') },
+                      { name: 'GUVA-S12SD', status: selectedHive.device?.status === 'OFFLINE' ? 'OFFLINE' : (selectedHive.current?.uv != null ? 'ONLINE' : 'ERROR') },
+                      { name: 'Load Cell', status: selectedHive.device?.status === 'OFFLINE' ? 'NOT CONNECTED' : (selectedHive.current?.weight != null ? 'ONLINE' : 'NOT CONNECTED') },
+                    ].map(s => (
+                      <div key={s.name} className="flex justify-between items-center pb-3 border-b border-gray-50 last:border-0 last:pb-0">
+                        <span className="font-semibold text-gray-700">{s.name}</span>
+                        <span className={`text-xs font-black px-2 py-1 rounded ${s.status === 'ONLINE' ? 'bg-green-100 text-green-700' : s.status === 'NOT CONNECTED' ? 'bg-orange-100 text-orange-700' : s.status === 'ERROR' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-500'}`}>{s.status}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Environment Status</h3>
+                    <div className="flex flex-col items-center justify-center pt-4">
+                      <span className={`text-4xl font-black mb-2 ${selectedHive.environment?.status === 'CRITICAL' ? 'text-red-600' : 'text-gray-900'}`}>{selectedHive.environment?.status || 'UNKNOWN'}</span>
+                      <span className="text-sm font-bold text-gray-400">Rule-Based Score: {selectedHive.environment?.score || 0} / 100</span>
+                    </div>
+                  </div>
+                  {aiAnalysis && aiAnalysis.success && (
+                    <div className="mt-8 pt-6 border-t border-gray-100">
+                      <p className="text-xs font-bold text-gray-400 mb-2 uppercase tracking-widest">Data Quality</p>
+                      <div className="w-full bg-gray-100 rounded-full h-2 mb-1">
+                        <div className="bg-black h-2 rounded-full" style={{ width: `${aiAnalysis.dataQuality?.percentage || 0}%` }}></div>
+                      </div>
+                      <p className="text-[10px] font-bold text-gray-500">{aiAnalysis.dataQuality?.validSensors} / {aiAnalysis.dataQuality?.totalSensors} sensors active</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {aiAnalysis && (
+                <div className="mt-6 bg-gray-900 rounded-xl p-6 text-white shadow-xl">
+                  <div className="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                        <span className="text-blue-400 font-black">AI</span>
+                      </div>
+                      <h3 className="font-black text-lg tracking-wider">GROQ AI ASSESSMENT</h3>
+                    </div>
+                    {aiAnalysis.aiAssessment?.environmentStatus && (
+                      <span className={`px-3 py-1 text-xs font-black rounded ${
+                        aiAnalysis.aiAssessment.environmentStatus === 'Critical' ? 'bg-red-500/20 text-red-400' : 
+                        aiAnalysis.aiAssessment.environmentStatus === 'Warning' ? 'bg-orange-500/20 text-orange-400' : 
+                        'bg-green-500/20 text-green-400'
+                      }`}>
+                        {aiAnalysis.aiAssessment.environmentStatus.toUpperCase()} (CONF: {aiAnalysis.aiAssessment.confidence}%)
+                      </span>
+                    )}
+                  </div>
+
+                  {aiAnalysis.aiAssessment?.error ? (
+                    <p className="text-red-400 font-semibold">{aiAnalysis.aiAssessment.error}</p>
+                  ) : aiAnalysis.aiAssessment?.summary ? (
+                    <div className="space-y-6 text-sm">
+                      <div>
+                        <h4 className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-2">Summary</h4>
+                        <p className="text-gray-100 leading-relaxed">{aiAnalysis.aiAssessment.summary}</p>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-6">
+                        <div>
+                          <h4 className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-2">Alerts & Issues</h4>
+                          <ul className="space-y-1">
+                            {aiAnalysis.aiAssessment.alerts?.map((a: string, i: number) => <li key={i} className="text-red-300 flex items-start gap-2"><span className="text-red-500">•</span> {a}</li>)}
+                            {aiAnalysis.aiAssessment.sensorIssues?.map((a: string, i: number) => <li key={i} className="text-orange-300 flex items-start gap-2"><span className="text-orange-500">•</span> {a}</li>)}
+                            {(!aiAnalysis.aiAssessment.alerts?.length && !aiAnalysis.aiAssessment.sensorIssues?.length) && <li className="text-gray-500">None</li>}
+                          </ul>
+                        </div>
+                        <div>
+                          <h4 className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-2">Recommendations</h4>
+                          <ul className="space-y-1">
+                            {aiAnalysis.aiAssessment.recommendations?.map((r: string, i: number) => <li key={i} className="text-green-300 flex items-start gap-2"><span className="text-green-500">•</span> {r}</li>)}
+                          </ul>
+                        </div>
+                      </div>
+
+                      <div className="pt-4 border-t border-gray-800">
+                        <h4 className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-2">AI Reasoning</h4>
+                        <p className="text-gray-300 leading-relaxed italic">{aiAnalysis.aiAssessment.reasoning}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 italic">No valid AI response.</p>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
