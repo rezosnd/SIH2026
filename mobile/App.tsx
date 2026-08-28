@@ -40,7 +40,7 @@ const HoneyJarIcon = ({ size = 24, color = "#000", strokeWidth = 2, ...props }: 
   </Svg>
 );
 
-const API = 'https://backend-eight-jade-26.vercel.app';
+const API = 'https://sih-2026-kiit.vercel.app';
 const getAuthHeaders = (t: string) => ({ Authorization: `Bearer ${t}` });
 
 export default function App() {
