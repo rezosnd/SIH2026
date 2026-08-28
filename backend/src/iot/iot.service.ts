@@ -298,13 +298,14 @@ export class IoTService {
           response_format: { type: 'json_object' }
         });
 
-        const content = chatCompletion.choices[0]?.message?.content;
+        let content = chatCompletion.choices[0]?.message?.content;
         if (content) {
+          content = content.replace(/```json/g, '').replace(/```/g, '').trim();
           aiResult = JSON.parse(content);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Groq API Error:", err);
-        aiResult = { error: "AI Analysis temporarily unavailable." };
+        aiResult = { error: `AI Analysis temporarily unavailable. Details: ${err.message || 'Parse Error'}` };
       }
     } else if (!process.env.GROQ_API_KEY) {
       aiResult = { error: "AI Analysis not configured." };
