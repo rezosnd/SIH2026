@@ -286,11 +286,11 @@ export class IoTService {
           messages: [
             {
               role: 'system',
-              content: `You are an expert apiary AI analyst. Analyze the provided IoT sensor data. Output ONLY a valid JSON object matching the requested schema. DO NOT invent sensor data if it is null/unavailable. Do not claim diseases without strong evidence. Ensure you distinguish between "OBSERVED", "POSSIBLE", and "UNKNOWN". IMPORTANT: Output all descriptive text (summary, alerts, recommendations, sensorIssues, hiveRisk, productivityImpact, dataQuality, reasoning) in ${lang}.`
+              content: `You are an expert apiary AI analyst. Analyze the provided IoT sensor data. Output ONLY a valid JSON object matching the requested schema. DO NOT invent sensor data if it is null/unavailable. Do not claim diseases without strong evidence. Ensure you distinguish between "OBSERVED", "POSSIBLE", and "UNKNOWN". IMPORTANT: Output all descriptive text (summary, alerts, recommendations, sensorIssues, hiveRisk, productivityImpact, dataQuality, reasoning) in ${lang}. DO NOT translate the JSON keys. The keys MUST remain exactly as specified in English.`
             },
             {
               role: 'user',
-              content: `Analyze this hive data and return a JSON object with this exact structure: {"environmentStatus":"Good|Attention|Warning|Critical","confidence":0-100,"summary":"Brief summary","alerts":["alert 1"],"recommendations":["rec 1"],"sensorIssues":["issue 1"],"hiveRisk":"description","productivityImpact":"description","dataQuality":"description","reasoning":"detailed reasoning"}. Data: ${JSON.stringify(promptContext)}`
+              content: `Analyze this hive data and return a JSON object with this exact structure: {"environmentStatus":"Good|Attention|Warning|Critical","confidence":0-100,"summary":"Brief summary","alerts":["alert 1"],"recommendations":["rec 1"],"sensorIssues":["issue 1"],"hiveRisk":"description","productivityImpact":"description","dataQuality":"description","reasoning":"detailed reasoning"}. IMPORTANT: 'alerts', 'recommendations', and 'sensorIssues' MUST be JSON arrays of strings. Data: ${JSON.stringify(promptContext)}`
             }
           ],
           model: 'llama3-8b-8192',

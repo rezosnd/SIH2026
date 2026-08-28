@@ -497,15 +497,15 @@ export default function AdminDashboard() {
                         <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
                           <h4 className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-4">Alerts & Issues</h4>
                           <ul className="space-y-3">
-                            {aiAnalysis.aiAssessment.alerts?.map((a: string, i: number) => <li key={i} className="text-gray-700 text-sm flex items-start gap-3"><span className="text-red-500 font-black mt-0.5">•</span> <span>{a}</span></li>)}
-                            {aiAnalysis.aiAssessment.sensorIssues?.map((a: string, i: number) => <li key={i} className="text-gray-700 text-sm flex items-start gap-3"><span className="text-orange-400 font-black mt-0.5">•</span> <span>{a}</span></li>)}
+                            {(Array.isArray(aiAnalysis.aiAssessment.alerts) ? aiAnalysis.aiAssessment.alerts : (aiAnalysis.aiAssessment.alerts ? [aiAnalysis.aiAssessment.alerts] : [])).map((a: string, i: number) => <li key={i} className="text-gray-700 text-sm flex items-start gap-3"><span className="text-red-500 font-black mt-0.5">•</span> <span>{a}</span></li>)}
+                            {(Array.isArray(aiAnalysis.aiAssessment.sensorIssues) ? aiAnalysis.aiAssessment.sensorIssues : (aiAnalysis.aiAssessment.sensorIssues ? [aiAnalysis.aiAssessment.sensorIssues] : [])).map((a: string, i: number) => <li key={i} className="text-gray-700 text-sm flex items-start gap-3"><span className="text-orange-400 font-black mt-0.5">•</span> <span>{a}</span></li>)}
                             {(!aiAnalysis.aiAssessment.alerts?.length && !aiAnalysis.aiAssessment.sensorIssues?.length) && <li className="text-gray-400 text-sm font-semibold">No critical issues detected.</li>}
                           </ul>
                         </div>
                         <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
                           <h4 className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-4">Recommended Actions</h4>
                           <ul className="space-y-3">
-                            {aiAnalysis.aiAssessment.recommendations?.map((r: string, i: number) => <li key={i} className="text-gray-700 text-sm flex items-start gap-3"><span className="text-black font-black mt-0.5">→</span> <span>{r}</span></li>)}
+                            {(Array.isArray(aiAnalysis.aiAssessment.recommendations) ? aiAnalysis.aiAssessment.recommendations : (aiAnalysis.aiAssessment.recommendations ? [aiAnalysis.aiAssessment.recommendations] : [])).map((r: string, i: number) => <li key={i} className="text-gray-700 text-sm flex items-start gap-3"><span className="text-black font-black mt-0.5">→</span> <span>{r}</span></li>)}
                           </ul>
                         </div>
                       </div>

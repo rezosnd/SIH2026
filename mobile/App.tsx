@@ -550,12 +550,12 @@ export default function App() {
                 <Text style={{color: '#ddd', fontSize: 13, marginBottom: 16}}>{aiAnalysis.aiAssessment.summary}</Text>
                 
                 <Text style={{color: '#9ca3af', fontWeight: 'bold', fontSize: 10, marginBottom: 4}}>ISSUES</Text>
-                {aiAnalysis.aiAssessment.alerts?.map((a: string, i: number) => <Text key={'a'+i} style={{color: '#FCA5A5', fontSize: 12, marginBottom: 2}}>• {a}</Text>)}
-                {aiAnalysis.aiAssessment.sensorIssues?.map((a: string, i: number) => <Text key={'s'+i} style={{color: '#FDBA74', fontSize: 12, marginBottom: 2}}>• {a}</Text>)}
+                {(Array.isArray(aiAnalysis.aiAssessment.alerts) ? aiAnalysis.aiAssessment.alerts : (aiAnalysis.aiAssessment.alerts ? [aiAnalysis.aiAssessment.alerts] : [])).map((a: string, i: number) => <Text key={'a'+i} style={{color: '#FCA5A5', fontSize: 12, marginBottom: 2}}>• {a}</Text>)}
+                {(Array.isArray(aiAnalysis.aiAssessment.sensorIssues) ? aiAnalysis.aiAssessment.sensorIssues : (aiAnalysis.aiAssessment.sensorIssues ? [aiAnalysis.aiAssessment.sensorIssues] : [])).map((a: string, i: number) => <Text key={'s'+i} style={{color: '#FDBA74', fontSize: 12, marginBottom: 2}}>• {a}</Text>)}
                 {(!aiAnalysis.aiAssessment.alerts?.length && !aiAnalysis.aiAssessment.sensorIssues?.length) && <Text style={{color: '#6b7280', fontSize: 12, marginBottom: 8}}>None</Text>}
                 
                 <Text style={{color: '#9ca3af', fontWeight: 'bold', fontSize: 10, marginTop: 8, marginBottom: 4}}>RECOMMENDATIONS</Text>
-                {aiAnalysis.aiAssessment.recommendations?.map((r: string, i: number) => <Text key={'r'+i} style={{color: '#86EFAC', fontSize: 12, marginBottom: 2}}>• {r}</Text>)}
+                {(Array.isArray(aiAnalysis.aiAssessment.recommendations) ? aiAnalysis.aiAssessment.recommendations : (aiAnalysis.aiAssessment.recommendations ? [aiAnalysis.aiAssessment.recommendations] : [])).map((r: string, i: number) => <Text key={'r'+i} style={{color: '#86EFAC', fontSize: 12, marginBottom: 2}}>• {r}</Text>)}
                 
                 <View style={{marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: '#333'}}>
                   <Text style={{color: '#9ca3af', fontWeight: 'bold', fontSize: 10, marginBottom: 4}}>REASONING</Text>
