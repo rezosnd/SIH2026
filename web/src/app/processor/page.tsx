@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useCallback } from 'react';
-import { Package, CheckCircle, Clock, Beaker, Archive, ChevronRight, AlertCircle, Plus, Printer } from 'lucide-react';
+import { Package, CheckCircle, Clock, Beaker, Archive, ChevronRight, AlertCircle, Plus, Printer, Settings, ClipboardList, Loader, PackageSearch, ArrowRight } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://backend-eight-jade-26.vercel.app';
@@ -11,21 +11,21 @@ async function getToken() {
 }
 
 const STATUS_FLOW: Record<string, { next: string; label: string; color: string }[]> = {
-  ASSIGNED:             [{ next: 'ACCEPTED', label: 'Accept Batch', color: 'bg-blue-600 hover:bg-blue-700' }],
-  ACCEPTED:             [{ next: 'PROCESSING', label: 'Start Processing', color: 'bg-yellow-500 hover:bg-yellow-600' }],
-  PROCESSING:           [{ next: 'PROCESSING_COMPLETED', label: 'Mark Complete', color: 'bg-orange-500 hover:bg-orange-600' }],
-  PROCESSING_COMPLETED: [{ next: 'QUALITY_CHECKED', label: 'Pass Quality Check', color: 'bg-purple-600 hover:bg-purple-700' }],
-  QUALITY_CHECKED:      [{ next: 'PACKAGED', label: 'Mark Packaged', color: 'bg-green-600 hover:bg-green-700' }],
+  ASSIGNED:             [{ next: 'ACCEPTED', label: 'Accept Batch', color: 'bg-[#111111] hover:bg-[#222222]' }],
+  ACCEPTED:             [{ next: 'PROCESSING', label: 'Start Processing', color: 'bg-[#111111] hover:bg-[#222222]' }],
+  PROCESSING:           [{ next: 'PROCESSING_COMPLETED', label: 'Mark Complete', color: 'bg-[#111111] hover:bg-[#222222]' }],
+  PROCESSING_COMPLETED: [{ next: 'QUALITY_CHECKED', label: 'Pass Quality Check', color: 'bg-[#111111] hover:bg-[#222222]' }],
+  QUALITY_CHECKED:      [{ next: 'PACKAGED', label: 'Mark Packaged', color: 'bg-[#111111] hover:bg-[#222222]' }],
 };
 
 const STATUS_COLOR: Record<string, string> = {
-  ASSIGNED: 'bg-blue-100 text-blue-700 border-blue-200',
-  ACCEPTED: 'bg-indigo-100 text-indigo-700 border-indigo-200',
-  PROCESSING: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  PROCESSING_COMPLETED: 'bg-orange-100 text-orange-700 border-orange-200',
-  QUALITY_CHECKED: 'bg-purple-100 text-purple-700 border-purple-200',
-  PACKAGED: 'bg-green-100 text-green-700 border-green-200',
-  DISTRIBUTED: 'bg-gray-100 text-gray-600 border-gray-200',
+  ASSIGNED: 'bg-gray-50 text-gray-700 border-gray-200',
+  ACCEPTED: 'bg-gray-50 text-gray-700 border-gray-200',
+  PROCESSING: 'bg-amber-50 text-amber-700 border-amber-200',
+  PROCESSING_COMPLETED: 'bg-amber-50 text-amber-700 border-amber-200',
+  QUALITY_CHECKED: 'bg-blue-50 text-blue-700 border-blue-200',
+  PACKAGED: 'bg-green-50 text-green-700 border-green-200',
+  DISTRIBUTED: 'bg-gray-50 text-gray-600 border-gray-200',
 };
 
 export default function ProcessorDashboard() {
@@ -119,259 +119,374 @@ export default function ProcessorDashboard() {
   };
 
   const StatusBadge = ({ status }: { status: string }) => (
-    <span className={`text-xs font-bold px-2 py-0.5 rounded border ${STATUS_COLOR[status] || 'bg-gray-100 text-gray-600'}`}>
+    <span className={`text-[11px] font-bold px-2.5 py-1 rounded-md border tracking-wider uppercase ${STATUS_COLOR[status] || 'bg-gray-50 text-gray-600 border-gray-200'}`}>
       {status.replace(/_/g, ' ')}
     </span>
   );
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#f3f4f6] flex items-center justify-center font-sans">
-        <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm text-center border border-gray-200">
-          <div className="flex justify-center mb-4"><Package className="w-12 h-12 text-gray-900" /></div>
-          <h1 className="text-xl font-black uppercase tracking-widest text-gray-900 mb-2">Processor Portal</h1>
-          <p className="text-xs text-gray-500 mb-6 font-semibold">Enter your secure password to continue</p>
+      <div className="min-h-screen bg-[#F7F7F7] flex items-center justify-center font-sans p-4">
+        <div className="bg-white p-10 rounded-[20px] shadow-[0_2px_8px_rgba(0,0,0,0.04)] w-full max-w-sm text-center border border-[#E5E5E5]">
+          <div className="flex justify-center mb-6"><Settings className="w-10 h-10 text-[#111111]" strokeWidth={1.8} /></div>
+          <h1 className="text-2xl font-bold uppercase tracking-wide text-[#111111] mb-2">Processor Portal</h1>
+          <p className="text-[13px] text-[#666666] mb-8 font-medium">Enter your secure password to continue</p>
           <input 
             type="password" 
             value={password} 
             onChange={e => setPassword(e.target.value)}
             placeholder="Password"
-            className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900 mb-4 text-center font-mono"
+            className="w-full px-4 py-3.5 rounded-[12px] border border-[#E5E5E5] focus:outline-none focus:border-[#111111] mb-6 text-center font-mono text-[15px]"
             onKeyDown={e => e.key === 'Enter' && password === 'password123' && setIsAuthenticated(true)}
           />
           <button 
             onClick={() => password === 'password123' && setIsAuthenticated(true)}
-            className="w-full bg-gray-900 text-white font-bold py-3 rounded-lg hover:bg-black transition-colors"
+            className="w-full bg-[#111111] text-white font-semibold py-3.5 rounded-[12px] hover:bg-[#222222] transition-all active:scale-[0.98] text-[14px]"
           >
-            LOGIN
+            SECURE LOGIN
           </button>
         </div>
       </div>
     );
   }
 
-  if (view === 'available') return (
-    <div className="min-h-screen bg-[#f3f4f6] font-sans p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex items-center gap-4 mb-8">
-          <button onClick={() => setView('dashboard')} className="text-sm font-bold text-gray-500 hover:text-black">&larr; Back</button>
-          <h1 className="text-2xl font-black uppercase tracking-wide">Available Batches</h1>
-        </div>
-        <div className="grid gap-4">
-          {available.length === 0 ? (
-            <div className="bg-white rounded-xl p-12 text-center border border-gray-200">
-              <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="font-bold text-gray-400">No batches available for assignment.</p>
-            </div>
-          ) : available.map(b => (
-            <div key={b.id} className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex items-center justify-between">
-              <div>
-                <p className="font-black">Batch {b.id.slice(0,8).toUpperCase()}</p>
-                <p className="text-sm text-gray-500 mt-1">Hive: {b.hive?.location} | Qty: {b.quantity}kg</p>
-                <p className="text-xs text-gray-400 mt-1">Harvest: {new Date(b.harvestDate).toLocaleDateString()}</p>
-              </div>
-              <button onClick={() => assignBatch(b.id)} disabled={actionLoading} className="bg-black text-white text-sm font-bold px-5 py-2.5 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50">
-                Assign to Me
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-
-  if (view === 'detail' && selectedBatch) return (
-    <div className="min-h-screen bg-[#f3f4f6] font-sans p-8">
-      <div className="max-w-3xl mx-auto space-y-6">
-        <div className="flex items-center gap-4">
-          <button onClick={() => setView('dashboard')} className="text-sm font-bold text-gray-500 hover:text-black">&larr; Back</button>
-          <h1 className="text-2xl font-black uppercase tracking-wide">Batch {selectedBatch.id.slice(0,8).toUpperCase()}</h1>
-          <StatusBadge status={selectedBatch.status} />
-        </div>
-
-        {/* Batch Info */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-          <h3 className="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Batch Information</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div><p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Hive</p><p className="font-semibold mt-1">{selectedBatch.hive?.location}</p></div>
-            <div><p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Quantity</p><p className="font-semibold mt-1">{selectedBatch.quantity}kg</p></div>
-            <div><p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Harvest Date</p><p className="font-semibold mt-1">{new Date(selectedBatch.harvestDate).toLocaleDateString()}</p></div>
-            <div><p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Status</p><div className="mt-1"><StatusBadge status={selectedBatch.status} /></div></div>
+  if (view === 'available') {
+    return (
+      <div className="min-h-screen bg-[#F7F7F7] font-sans pb-12">
+        <div className="bg-white border-b border-[#E5E5E5]">
+          <div className="max-w-[1400px] mx-auto px-5 md:px-10 py-6 md:py-8">
+            <button onClick={() => setView('dashboard')} className="text-[13px] font-bold text-[#666666] hover:text-[#111111] mb-4 flex items-center gap-1 transition-colors">
+              &larr; Back to Dashboard
+            </button>
+            <h1 className="text-2xl md:text-3xl font-bold text-[#111111] tracking-tight">AVAILABLE BATCHES</h1>
           </div>
         </div>
 
-        {/* Status Transitions */}
-        {STATUS_FLOW[selectedBatch.status] && (
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <h3 className="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Status Transition</h3>
-            {STATUS_FLOW[selectedBatch.status].map(t => (
-              <button key={t.next} onClick={() => transition(selectedBatch.id, t.next)} disabled={actionLoading}
-                className={`${t.color} text-white font-bold px-6 py-3 rounded-lg transition-colors disabled:opacity-50 text-sm`}>
-                {t.label}
-              </button>
+        <div className="max-w-[1400px] mx-auto px-5 md:px-10 pt-8">
+          <div className="grid gap-5">
+            {available.length === 0 ? (
+              <div className="bg-white rounded-[18px] p-16 text-center border border-[#E5E5E5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                <PackageSearch className="w-12 h-12 text-[#E5E5E5] mx-auto mb-4" strokeWidth={1.5} />
+                <h4 className="text-[16px] font-bold text-[#111111] mb-2">No available batches</h4>
+                <p className="text-[#666666] text-[14px]">There are currently no new batches waiting for assignment.</p>
+              </div>
+            ) : available.map(b => (
+              <div key={b.id} className="bg-white rounded-[18px] border border-[#E5E5E5] shadow-[0_2px_8px_rgba(0,0,0,0.02)] p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all hover:-translate-y-[2px] hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 flex-1">
+                  <div><p className="text-[11px] font-bold text-[#888888] uppercase tracking-widest mb-1">Batch ID</p><p className="font-mono text-[15px] font-semibold text-[#111111]">{b.id.slice(0,8).toUpperCase()}</p></div>
+                  <div><p className="text-[11px] font-bold text-[#888888] uppercase tracking-widest mb-1">Hive</p><p className="text-[15px] text-[#222222] font-medium">{b.hive?.location}</p></div>
+                  <div><p className="text-[11px] font-bold text-[#888888] uppercase tracking-widest mb-1">Quantity</p><p className="text-[15px] text-[#222222] font-bold">{b.quantity} kg</p></div>
+                  <div><p className="text-[11px] font-bold text-[#888888] uppercase tracking-widest mb-1">Harvest Date</p><p className="text-[14px] text-[#666666]">{new Date(b.harvestDate).toLocaleDateString()}</p></div>
+                </div>
+                <button onClick={() => assignBatch(b.id)} disabled={actionLoading} className="bg-[#111111] text-white text-[14px] font-semibold px-8 py-3.5 rounded-[12px] hover:bg-[#222222] transition-all active:scale-[0.98] disabled:opacity-50 whitespace-nowrap self-start md:self-center">
+                  Assign to Me
+                </button>
+              </div>
             ))}
           </div>
-        )}
+        </div>
+      </div>
+    );
+  }
 
-        {/* Quality Records */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-          <h3 className="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Quality Records</h3>
-          {selectedBatch.qualityRecords?.length > 0 ? (
-            <table className="w-full text-sm mb-4">
-              <thead><tr className="border-b"><th className="text-left py-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Metric</th><th className="text-left py-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Value</th></tr></thead>
-              <tbody>{selectedBatch.qualityRecords.map((q: any) => <tr key={q.id} className="border-b border-gray-50"><td className="py-2 font-semibold">{q.metric}</td><td className="py-2 text-gray-600">{q.value}</td></tr>)}</tbody>
-            </table>
-          ) : <p className="text-sm text-gray-400 mb-4">No quality records yet.</p>}
-          <div className="flex gap-3">
-            <input className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm" placeholder="Metric (e.g. MOISTURE_CONTENT)" value={qualityMetric} onChange={e => setQualityMetric(e.target.value)} />
-            <input className="w-32 border border-gray-200 rounded-lg px-3 py-2 text-sm" placeholder="Value (e.g. 17%)" value={qualityValue} onChange={e => setQualityValue(e.target.value)} />
-            <button onClick={addQuality} disabled={actionLoading || !qualityMetric || !qualityValue} className="bg-black text-white font-bold px-4 py-2 rounded-lg text-sm hover:bg-gray-800 disabled:opacity-50">Add</button>
+  if (view === 'detail' && selectedBatch) {
+    return (
+      <div className="min-h-screen bg-[#F7F7F7] font-sans pb-12">
+        <div className="bg-white border-b border-[#E5E5E5]">
+          <div className="max-w-[1000px] mx-auto px-5 md:px-10 py-6 md:py-8">
+            <button onClick={() => setView('dashboard')} className="text-[13px] font-bold text-[#666666] hover:text-[#111111] mb-4 flex items-center gap-1 transition-colors">
+              &larr; Back to Dashboard
+            </button>
+            <div className="flex flex-col md:flex-row md:items-center gap-4">
+              <h1 className="text-2xl md:text-3xl font-bold text-[#111111] tracking-tight flex items-center gap-3">
+                BATCH <span className="font-mono bg-[#F7F7F7] px-3 py-1 rounded-[8px] border border-[#E5E5E5] text-[24px]">{selectedBatch.id.slice(0,8).toUpperCase()}</span>
+              </h1>
+              <div className="self-start md:self-center"><StatusBadge status={selectedBatch.status} /></div>
+            </div>
           </div>
         </div>
 
-        {/* Containers / Packaging */}
-        {(selectedBatch.status === 'QUALITY_CHECKED' || selectedBatch.status === 'PACKAGED') && (
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <h3 className="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Containers & QR Codes</h3>
-            {containers.length > 0 && (
-              <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                {containers.map(c => {
-                  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://honey-sih-kiit.vercel.app';
-                  const qrUrl = `${baseUrl}/verify/batch/${c.qrData}`;
-                  
-                  const handlePrint = () => {
-                    const svg = document.getElementById(`qr-${c.id}`);
-                    if (!svg) return;
-                    const svgData = new XMLSerializer().serializeToString(svg);
-                    const printWindow = window.open('', '', 'width=600,height=600');
-                    if (!printWindow) return;
-                    printWindow.document.write(`
-                      <html>
-                        <head><title>Print Label - ${c.qrData}</title></head>
-                        <body style="display:flex;justify-content:center;align-items:center;height:100vh;margin:0;flex-direction:column;font-family:sans-serif;">
-                          <div style="text-align:center;padding:40px;border:2px dashed #ccc;border-radius:20px;">
-                            ${svgData.replace('<svg', '<svg style="width:200px;height:200px;"')}
-                            <h2 style="margin-top:20px;font-family:monospace;letter-spacing:2px;font-size:24px;">${c.qrData}</h2>
-                            <p style="color:#666;">Size: ${c.containerSize} kg</p>
-                          </div>
-                          <script>
-                            window.onload = function() { setTimeout(() => { window.print(); window.close(); }, 500); }
-                          </script>
-                        </body>
-                      </html>
-                    `);
-                    printWindow.document.close();
-                  };
+        <div className="max-w-[1000px] mx-auto px-5 md:px-10 pt-8 space-y-8">
+          
+          {/* Batch Info */}
+          <div className="bg-white rounded-[20px] border border-[#E5E5E5] p-7 md:p-8 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+            <h3 className="font-bold text-[13px] uppercase tracking-widest text-[#888888] mb-6">Batch Information</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div><p className="text-[11px] text-[#888888] font-bold uppercase tracking-widest mb-1.5">Hive</p><p className="font-medium text-[#222222] text-[15px]">{selectedBatch.hive?.location}</p></div>
+              <div><p className="text-[11px] text-[#888888] font-bold uppercase tracking-widest mb-1.5">Quantity</p><p className="font-bold text-[#222222] text-[15px]">{selectedBatch.quantity} kg</p></div>
+              <div><p className="text-[11px] text-[#888888] font-bold uppercase tracking-widest mb-1.5">Harvest Date</p><p className="font-medium text-[#666666] text-[15px]">{new Date(selectedBatch.harvestDate).toLocaleDateString()}</p></div>
+              <div><p className="text-[11px] text-[#888888] font-bold uppercase tracking-widest mb-1.5">Current Status</p><div className="mt-1"><StatusBadge status={selectedBatch.status} /></div></div>
+            </div>
+          </div>
 
-                  return (
-                    <div key={c.id} className="flex flex-col items-center justify-center border border-gray-200 rounded-xl p-6 bg-gray-50 shadow-sm relative overflow-hidden">
-                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-orange-500"></div>
-                      <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-100 mb-4">
-                        <QRCodeSVG id={`qr-${c.id}`} value={qrUrl} size={140} level="H" includeMargin={false} />
-                      </div>
-                      <div className="text-center w-full">
-                        <p className="text-xs font-black uppercase tracking-widest text-gray-500 mb-1">HoneyChain Secure QR</p>
-                        <p className="font-mono text-[10px] text-gray-400 break-all bg-white px-2 py-1 rounded border border-gray-200">{c.qrData}</p>
-                        <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-200 w-full">
-                          <span className="text-sm font-bold text-gray-900">{c.containerSize} kg</span>
-                          <button onClick={handlePrint} className="text-[10px] font-bold uppercase bg-black text-white px-3 py-1.5 rounded flex items-center gap-1 hover:bg-gray-800 transition-colors">
-                            <Printer className="w-3 h-3" /> Print Label
-                          </button>
+          {/* Status Transitions */}
+          {STATUS_FLOW[selectedBatch.status] && (
+            <div className="bg-white rounded-[20px] border border-[#E5E5E5] p-7 md:p-8 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+              <h3 className="font-bold text-[13px] uppercase tracking-widest text-[#888888] mb-6">Status Transition</h3>
+              <div className="flex flex-wrap gap-4">
+                {STATUS_FLOW[selectedBatch.status].map(t => (
+                  <button key={t.next} onClick={() => transition(selectedBatch.id, t.next)} disabled={actionLoading}
+                    className={`bg-[#111111] hover:bg-[#222222] text-white font-semibold px-8 py-3.5 rounded-[12px] transition-all active:scale-[0.98] disabled:opacity-50 text-[14px]`}>
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Quality Records */}
+          <div className="bg-white rounded-[20px] border border-[#E5E5E5] p-7 md:p-8 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+            <h3 className="font-bold text-[13px] uppercase tracking-widest text-[#888888] mb-6">Quality Records</h3>
+            {selectedBatch.qualityRecords?.length > 0 ? (
+              <div className="overflow-hidden border border-[#E5E5E5] rounded-[12px] mb-6">
+                <table className="w-full text-left border-collapse">
+                  <thead className="bg-[#FAFAFA] border-b border-[#E5E5E5]">
+                    <tr>
+                      <th className="px-6 py-3 text-[11px] font-bold text-[#888888] uppercase tracking-widest">Metric</th>
+                      <th className="px-6 py-3 text-[11px] font-bold text-[#888888] uppercase tracking-widest">Value</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#E5E5E5]">
+                    {selectedBatch.qualityRecords.map((q: any) => (
+                      <tr key={q.id}>
+                        <td className="px-6 py-4 font-semibold text-[#222222] text-[14px]">{q.metric}</td>
+                        <td className="px-6 py-4 text-[#666666] text-[14px]">{q.value}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : <p className="text-[14px] text-[#666666] mb-6">No quality records attached to this batch yet.</p>}
+            
+            <div className="flex flex-col md:flex-row gap-3">
+              <input className="flex-1 border border-[#E5E5E5] rounded-[12px] px-4 py-3 text-[14px] focus:outline-none focus:border-[#111111] transition-colors" placeholder="Metric (e.g. MOISTURE_CONTENT)" value={qualityMetric} onChange={e => setQualityMetric(e.target.value)} />
+              <input className="md:w-48 border border-[#E5E5E5] rounded-[12px] px-4 py-3 text-[14px] focus:outline-none focus:border-[#111111] transition-colors" placeholder="Value (e.g. 17%)" value={qualityValue} onChange={e => setQualityValue(e.target.value)} />
+              <button onClick={addQuality} disabled={actionLoading || !qualityMetric || !qualityValue} className="bg-[#111111] text-white font-semibold px-6 py-3 rounded-[12px] text-[14px] hover:bg-[#222222] transition-all active:scale-[0.98] disabled:opacity-50">Add Record</button>
+            </div>
+          </div>
+
+          {/* Containers / Packaging */}
+          {(selectedBatch.status === 'QUALITY_CHECKED' || selectedBatch.status === 'PACKAGED') && (
+            <div className="bg-white rounded-[20px] border border-[#E5E5E5] p-7 md:p-8 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+              <h3 className="font-bold text-[13px] uppercase tracking-widest text-[#888888] mb-6">Containers & QR Codes</h3>
+              {containers.length > 0 && (
+                <div className="mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {containers.map(c => {
+                    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://honey-sih-kiit.vercel.app';
+                    const qrUrl = `${baseUrl}/verify/batch/${c.qrData}`;
+                    
+                    const handlePrint = () => {
+                      const svg = document.getElementById(`qr-${c.id}`);
+                      if (!svg) return;
+                      const svgData = new XMLSerializer().serializeToString(svg);
+                      const printWindow = window.open('', '', 'width=600,height=600');
+                      if (!printWindow) return;
+                      printWindow.document.write(`
+                        <html>
+                          <head><title>Print Label - ${c.qrData}</title></head>
+                          <body style="display:flex;justify-content:center;align-items:center;height:100vh;margin:0;flex-direction:column;font-family:sans-serif;">
+                            <div style="text-align:center;padding:40px;border:2px solid #000;border-radius:24px;width:300px;">
+                              ${svgData.replace('<svg', '<svg style="width:220px;height:220px;margin:0 auto;"')}
+                              <h2 style="margin-top:24px;font-family:monospace;letter-spacing:1px;font-size:18px;">${c.qrData}</h2>
+                              <p style="color:#000;font-weight:bold;font-size:20px;margin-top:8px;">${c.containerSize} kg</p>
+                              <p style="color:#666;font-size:12px;margin-top:16px;">HONEYCHAIN SECURE TRACEABILITY</p>
+                            </div>
+                            <script>
+                              window.onload = function() { setTimeout(() => { window.print(); window.close(); }, 500); }
+                            </script>
+                          </body>
+                        </html>
+                      `);
+                      printWindow.document.close();
+                    };
+
+                    return (
+                      <div key={c.id} className="flex flex-col items-center justify-center border border-[#E5E5E5] rounded-[16px] p-6 bg-[#FAFAFA] transition-all hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] relative overflow-hidden group">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-[#111111]"></div>
+                        <div className="bg-white p-3 rounded-[12px] shadow-sm border border-[#E5E5E5] mb-5 group-hover:scale-105 transition-transform">
+                          <QRCodeSVG id={`qr-${c.id}`} value={qrUrl} size={140} level="H" includeMargin={false} />
+                        </div>
+                        <div className="text-center w-full">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-[#888888] mb-1.5">Secure QR Code</p>
+                          <p className="font-mono text-[11px] text-[#555555] break-all bg-white px-2.5 py-1.5 rounded-[6px] border border-[#E5E5E5]">{c.qrData}</p>
+                          <div className="flex justify-between items-center mt-4 pt-4 border-t border-[#E5E5E5] w-full">
+                            <span className="text-[15px] font-bold text-[#111111]">{c.containerSize} kg</span>
+                            <button onClick={handlePrint} className="text-[11px] font-bold uppercase bg-[#111111] text-white px-3.5 py-2 rounded-[8px] flex items-center gap-1.5 hover:bg-[#222222] transition-colors active:scale-[0.98]">
+                              <Printer className="w-3.5 h-3.5" /> Print
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-            <div className="flex gap-3">
-              <select className="border border-gray-200 rounded-lg px-3 py-2 text-sm" value={containerSize} onChange={e => setContainerSize(e.target.value)}>
-                <option value="0.25">0.25 kg</option>
-                <option value="0.5">0.5 kg</option>
-                <option value="1">1 kg</option>
-                <option value="2">2 kg</option>
-                <option value="5">5 kg</option>
-              </select>
-              <button onClick={createContainer} disabled={actionLoading} className="bg-black text-white font-bold px-4 py-2 rounded-lg text-sm hover:bg-gray-800 disabled:opacity-50 flex items-center gap-2">
-                <Plus className="w-4 h-4" /> Generate QR Container
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Supply Chain Events */}
-        {selectedBatch.events?.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <h3 className="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Supply Chain Timeline</h3>
-            <div className="space-y-3">
-              {selectedBatch.events.map((e: any) => (
-                <div key={e.id} className="flex gap-3">
-                  <div className="w-2 h-2 rounded-full bg-black mt-1.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-bold text-sm">{e.eventType.replace(/_/g, ' ')}</p>
-                    {e.description && <p className="text-xs text-gray-500">{e.description}</p>}
-                    <p className="text-xs text-gray-400">{new Date(e.timestamp).toLocaleString()}</p>
-                  </div>
+                    );
+                  })}
                 </div>
-              ))}
+              )}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <select className="border border-[#E5E5E5] rounded-[12px] px-4 py-3 text-[14px] focus:outline-none focus:border-[#111111] transition-colors bg-white sm:w-48" value={containerSize} onChange={e => setContainerSize(e.target.value)}>
+                  <option value="0.25">0.25 kg Container</option>
+                  <option value="0.5">0.5 kg Container</option>
+                  <option value="1">1.0 kg Container</option>
+                  <option value="2">2.0 kg Container</option>
+                  <option value="5">5.0 kg Container</option>
+                </select>
+                <button onClick={createContainer} disabled={actionLoading} className="bg-[#111111] text-white font-semibold px-6 py-3 rounded-[12px] text-[14px] hover:bg-[#222222] disabled:opacity-50 flex items-center justify-center gap-2 transition-all active:scale-[0.98]">
+                  <Plus className="w-4 h-4" /> Generate QR Container
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {/* Supply Chain Events */}
+          {selectedBatch.events?.length > 0 && (
+            <div className="bg-white rounded-[20px] border border-[#E5E5E5] p-7 md:p-8 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+              <h3 className="font-bold text-[13px] uppercase tracking-widest text-[#888888] mb-6">Supply Chain Timeline</h3>
+              <div className="space-y-6">
+                {selectedBatch.events.map((e: any, index: number) => (
+                  <div key={e.id} className="flex gap-4 relative">
+                    {index !== selectedBatch.events.length - 1 && (
+                      <div className="absolute left-[7px] top-6 bottom-[-24px] w-[2px] bg-[#E5E5E5]" />
+                    )}
+                    <div className="w-4 h-4 rounded-full border-[4px] border-white bg-[#111111] mt-0.5 flex-shrink-0 shadow-[0_0_0_2px_#E5E5E5] z-10" />
+                    <div>
+                      <p className="font-bold text-[#111111] text-[14px] mb-1">{e.eventType.replace(/_/g, ' ')}</p>
+                      {e.description && <p className="text-[13px] text-[#555555] mb-1">{e.description}</p>}
+                      <p className="text-[12px] font-medium text-[#888888]">{new Date(e.timestamp).toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-[#f3f4f6] font-sans p-8">
-      <div className="max-w-5xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-black uppercase tracking-wide">Processor Dashboard</h1>
-            <p className="text-gray-400 text-sm mt-1">Welcome, {dashboard?.name || 'Processor'} — {dashboard?.facility}</p>
-          </div>
-          <button onClick={() => setView('available')} className="bg-black text-white font-bold px-5 py-2.5 rounded-lg text-sm hover:bg-gray-800 transition-colors">
-            View Available Batches ({dashboard?.availableBatches ?? 0})
-          </button>
+    <div className="min-h-screen bg-[#F7F7F7] font-sans pb-12">
+      {/* Top Header */}
+      <div className="bg-white border-b border-[#E5E5E5]">
+        <div className="max-w-[1400px] mx-auto px-5 md:px-10 py-6 md:py-8 relative overflow-hidden">
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div>
+                <p className="text-[#888888] font-bold text-[11px] uppercase tracking-widest mb-1 flex items-center gap-2"><Settings className="w-3.5 h-3.5" /> HoneyChain</p>
+                <h1 className="text-3xl md:text-[36px] font-bold text-[#111111] tracking-tight leading-none mb-3">PROCESSOR PORTAL</h1>
+                <p className="text-[#555555] text-[15px]">Welcome back, Processor — <span className="font-semibold text-[#111111]">{dashboard?.facility || 'Main Facility'}</span></p>
+              </div>
+              <button onClick={() => setView('available')} className="bg-[#111111] text-white px-6 py-4 rounded-[14px] hover:bg-[#222222] transition-all active:scale-[0.98] flex items-center justify-between gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.1)] group">
+                <div className="flex flex-col items-start text-left">
+                  <span className="text-[13px] font-bold tracking-wide uppercase">View Available Batches</span>
+                  <span className="text-[11px] text-[#A0A0A0]">{dashboard?.availableBatches ?? 0} Available</span>
+                </div>
+                <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
         </div>
+      </div>
 
+      <div className="max-w-[1400px] mx-auto px-5 md:px-10 pt-8">
+        
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-5 mb-8">
-          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm"><p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Assigned</p><p className="text-4xl font-black">{dashboard?.assigned ?? 0}</p></div>
-          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm"><p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">In Progress</p><p className="text-4xl font-black text-yellow-600">{dashboard?.inProgress ?? 0}</p></div>
-          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm"><p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Completed</p><p className="text-4xl font-black text-green-600">{dashboard?.completed ?? 0}</p></div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          <div className="bg-white rounded-[18px] p-7 border border-[#E5E5E5] shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all hover:-translate-y-[2px] hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
+            <div className="flex justify-between items-start mb-6">
+              <p className="text-[12px] font-bold text-[#555555] uppercase tracking-widest">Assigned</p>
+              <ClipboardList className="w-5 h-5 text-[#888888]" strokeWidth={1.8} />
+            </div>
+            <p className="text-[42px] font-bold text-[#000000] leading-none mb-2">{dashboard?.assigned ?? 0}</p>
+            <p className="text-[13px] text-[#666666] font-medium flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#888888]"></span> Pending operations
+            </p>
+          </div>
+          
+          <div className="bg-white rounded-[18px] p-7 border border-[#E5E5E5] shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all hover:-translate-y-[2px] hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
+            <div className="flex justify-between items-start mb-6">
+              <p className="text-[12px] font-bold text-[#555555] uppercase tracking-widest">In Progress</p>
+              <Loader className="w-5 h-5 text-[#888888]" strokeWidth={1.8} />
+            </div>
+            <p className="text-[42px] font-bold text-[#000000] leading-none mb-2">{dashboard?.inProgress ?? 0}</p>
+            <p className="text-[13px] text-[#666666] font-medium flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-500"></span> Active processing
+            </p>
+          </div>
+
+          <div className="bg-white rounded-[18px] p-7 border border-[#E5E5E5] shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all hover:-translate-y-[2px] hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
+            <div className="flex justify-between items-start mb-6">
+              <p className="text-[12px] font-bold text-[#555555] uppercase tracking-widest">Completed</p>
+              <CheckCircle className="w-5 h-5 text-[#888888]" strokeWidth={1.8} />
+            </div>
+            <p className="text-[42px] font-bold text-[#000000] leading-none mb-2">{dashboard?.completed ?? 0}</p>
+            <p className="text-[13px] text-[#666666] font-medium flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-green-500"></span> Successfully finished
+            </p>
+          </div>
         </div>
 
         {/* Batch List */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 bg-gray-50"><h3 className="font-bold text-sm uppercase tracking-wider">My Assigned Batches</h3></div>
+        <div className="bg-white rounded-[20px] border border-[#E5E5E5] shadow-[0_2px_8px_rgba(0,0,0,0.02)] overflow-hidden">
+          <div className="px-5 md:px-8 py-6 border-b border-[#E5E5E5] flex justify-between items-center bg-white">
+            <h3 className="font-bold text-[16px] text-[#111111]">MY ASSIGNED BATCHES</h3>
+            <span className="text-[13px] font-medium text-[#666666] bg-[#F7F7F7] px-3 py-1 rounded-full border border-[#E5E5E5]">{dashboard?.batches?.length || 0} batches</span>
+          </div>
+          
           {(!dashboard?.batches || dashboard.batches.length === 0) ? (
-            <div className="p-12 text-center text-gray-400 font-semibold">No batches assigned yet. Click "View Available Batches" to pick one up.</div>
+            <div className="p-10 md:p-16 text-center bg-white">
+              <ClipboardList className="w-12 h-12 text-[#E5E5E5] mx-auto mb-4" strokeWidth={1.5} />
+              <h4 className="text-[16px] font-bold text-[#111111] mb-2">No batches assigned</h4>
+              <p className="text-[#666666] text-[14px] max-w-sm mx-auto mb-6">You currently have no batches waiting for processing. Check the available batches queue.</p>
+              <button onClick={() => setView('available')} className="bg-white text-[#111111] font-semibold border border-[#E5E5E5] px-6 py-2.5 rounded-[10px] hover:bg-[#F7F7F7] transition-colors text-[14px]">View Available Batches</button>
+            </div>
           ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-100">
-                <tr>
-                  {['Batch ID', 'Hive', 'Quantity', 'Status', 'Last Updated', ''].map(h => (
-                    <th key={h} className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
+            <>
+              {/* Desktop Table */}
+              <div className="hidden md:block w-full overflow-x-auto bg-white">
+                <table className="w-full text-left border-collapse min-w-[800px]">
+                  <thead className="bg-[#FAFAFA] border-b border-[#E5E5E5]">
+                    <tr>
+                      {['Batch ID', 'Hive', 'Quantity', 'Status', 'Last Updated', ''].map((h, i) => (
+                        <th key={i} className="px-8 py-4 text-[12px] font-bold text-[#555555] uppercase tracking-[0.08em] whitespace-nowrap">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#E5E5E5]">
+                    {dashboard.batches.map((b: any) => (
+                      <tr key={b.id} className="hover:bg-[#FAFAFA] transition-colors group">
+                        <td className="px-8 py-5 font-mono text-[14px] font-semibold text-[#111111] whitespace-nowrap">{b.id.slice(0,8).toUpperCase()}</td>
+                        <td className="px-8 py-5 text-[#222222] font-medium text-[14px] whitespace-nowrap">{b.hive?.location || '—'}</td>
+                        <td className="px-8 py-5 text-[#222222] font-bold text-[14px] whitespace-nowrap">{b.quantity} kg</td>
+                        <td className="px-8 py-5 whitespace-nowrap"><StatusBadge status={b.status} /></td>
+                        <td className="px-8 py-5 text-[#666666] text-[14px] whitespace-nowrap">{new Date(b.updatedAt).toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}</td>
+                        <td className="px-8 py-5 text-right whitespace-nowrap">
+                          <button onClick={() => { setSelectedBatch(b); setView('detail'); }} className="inline-flex items-center text-[14px] font-semibold text-[#111111] hover:underline underline-offset-4 group-hover:text-black transition-all">
+                            Manage <ArrowRight className="w-4 h-4 ml-1.5 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Cards */}
+              <div className="block md:hidden divide-y divide-[#E5E5E5] bg-white">
                 {dashboard.batches.map((b: any) => (
-                  <tr key={b.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-5 py-4 font-mono text-xs">{b.id.slice(0,8).toUpperCase()}</td>
-                    <td className="px-5 py-4 text-gray-600">{b.hive?.location || '—'}</td>
-                    <td className="px-5 py-4 font-bold">{b.quantity}kg</td>
-                    <td className="px-5 py-4"><StatusBadge status={b.status} /></td>
-                    <td className="px-5 py-4 text-gray-400 text-xs">{new Date(b.updatedAt).toLocaleString()}</td>
-                    <td className="px-5 py-4">
-                      <button onClick={() => { setSelectedBatch(b); setView('detail'); }} className="flex items-center text-sm font-bold text-gray-700 hover:text-black">
-                        Manage <ChevronRight className="w-4 h-4 ml-1" />
+                  <div key={b.id} className="p-5 bg-white hover:bg-[#FAFAFA] transition-colors">
+                    <div className="flex justify-between items-center mb-5">
+                      <span className="font-mono text-[15px] font-bold text-[#111111]">{b.id.slice(0,8).toUpperCase()}</span>
+                      <button onClick={() => { setSelectedBatch(b); setView('detail'); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F7F7F7] border border-[#E5E5E5] rounded-[8px] text-[12px] font-bold text-[#111111]">
+                        Manage <ArrowRight className="w-3.5 h-3.5" />
                       </button>
-                    </td>
-                  </tr>
+                    </div>
+                    <div className="grid grid-cols-2 gap-y-4 gap-x-4 text-[13px]">
+                        <div><p className="text-[#888888] font-bold uppercase tracking-widest text-[10px] mb-1">Hive</p><p className="text-[#222222] font-medium">{b.hive?.location || '—'}</p></div>
+                        <div><p className="text-[#888888] font-bold uppercase tracking-widest text-[10px] mb-1">Quantity</p><p className="text-[#222222] font-bold">{b.quantity} kg</p></div>
+                        <div><p className="text-[#888888] font-bold uppercase tracking-widest text-[10px] mb-1">Status</p><div className="mt-0.5"><StatusBadge status={b.status} /></div></div>
+                        <div><p className="text-[#888888] font-bold uppercase tracking-widest text-[10px] mb-1">Updated</p><p className="text-[#666666]">{new Date(b.updatedAt).toLocaleTimeString(undefined, {hour: 'numeric', minute: '2-digit'})}</p></div>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </>
           )}
         </div>
       </div>
