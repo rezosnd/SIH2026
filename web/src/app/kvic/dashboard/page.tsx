@@ -285,7 +285,7 @@ export default function KvicDashboard() {
                     </thead>
                     <tbody className="divide-y divide-[#E7E7E7]">
                       {loading ? (
-                        <SkeletonRow /><SkeletonRow /><SkeletonRow />
+                        <><SkeletonRow /><SkeletonRow /><SkeletonRow /></>
                       ) : (Array.isArray(data) ? data : []).length === 0 ? (
                         <tr><td colSpan={6} className="px-8 py-16 text-center text-[#777777] font-medium text-[14px]">No beekeepers registered.</td></tr>
                       ) : (Array.isArray(data) ? data : []).map((b: any) => (
@@ -322,7 +322,7 @@ export default function KvicDashboard() {
                   </thead>
                   <tbody className="divide-y divide-[#E7E7E7]">
                     {loading ? (
-                      <SkeletonRow /><SkeletonRow /><SkeletonRow />
+                      <><SkeletonRow /><SkeletonRow /><SkeletonRow /></>
                     ) : (Array.isArray(data) ? data : []).length === 0 ? (
                       <tr><td colSpan={7} className="px-8 py-16 text-center text-[#777777] font-medium text-[14px]">No hives registered.</td></tr>
                     ) : (Array.isArray(data) ? data : []).map((h: any) => {
@@ -534,7 +534,7 @@ export default function KvicDashboard() {
                   </thead>
                   <tbody className="divide-y divide-[#E7E7E7]">
                     {loading ? (
-                      <SkeletonRow /><SkeletonRow /><SkeletonRow />
+                      <><SkeletonRow /><SkeletonRow /><SkeletonRow /></>
                     ) : (Array.isArray(data) ? data : []).length === 0 ? (
                       <tr><td colSpan={6} className="px-8 py-16 text-center text-[#777777] font-medium text-[14px]">No batches found.</td></tr>
                     ) : (Array.isArray(data) ? data : []).map((b: any) => (
@@ -573,7 +573,7 @@ export default function KvicDashboard() {
                     </thead>
                     <tbody className="divide-y divide-[#E7E7E7]">
                       {loading ? (
-                        <SkeletonRow /><SkeletonRow />
+                        <><SkeletonRow /><SkeletonRow /></>
                       ) : (data?.recentScans ?? []).map((s: any) => (
                         <tr key={s.id} className={`hover:bg-[#FAFAFA] transition-colors ${s.isSuspicious ? 'bg-red-50/30' : ''}`}>
                           <td className="px-8 py-5 font-mono text-[13px] font-semibold text-[#111111]">{s.container?.id?.slice(0,8) || '—'}</td>
