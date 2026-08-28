@@ -174,7 +174,7 @@ export class IoTService {
     }));
   }
 
-  async getHiveAnalysis(hiveId: string, user: any) {
+  async getHiveAnalysis(hiveId: string, user: any, lang: string = 'English') {
     const hive = await this.prisma.hive.findUnique({
       where: { id: hiveId },
       include: { beekeeper: true, device: true }
@@ -286,7 +286,7 @@ export class IoTService {
           messages: [
             {
               role: 'system',
-              content: 'You are an expert apiary AI analyst. Analyze the provided IoT sensor data. Output ONLY a valid JSON object matching the requested schema. DO NOT invent sensor data if it is null/unavailable. Do not claim diseases without strong evidence. Ensure you distinguish between "OBSERVED", "POSSIBLE", and "UNKNOWN".'
+              content: `You are an expert apiary AI analyst. Analyze the provided IoT sensor data. Output ONLY a valid JSON object matching the requested schema. DO NOT invent sensor data if it is null/unavailable. Do not claim diseases without strong evidence. Ensure you distinguish between "OBSERVED", "POSSIBLE", and "UNKNOWN". IMPORTANT: Output all descriptive text (summary, alerts, recommendations, sensorIssues, hiveRisk, productivityImpact, dataQuality, reasoning) in ${lang}.`
             },
             {
               role: 'user',

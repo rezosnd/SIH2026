@@ -28,8 +28,8 @@ export class IoTController {
 
   @Get('hives/:hiveId/analysis')
   @UseGuards(JwtAuthGuard)
-  async getHiveAnalysis(@Param('hiveId') hiveId: string, @Req() req: any) {
-    return this.iotService.getHiveAnalysis(hiveId, req.user);
+  async getHiveAnalysis(@Param('hiveId') hiveId: string, @Req() req: any, @Query('lang') lang?: string) {
+    return this.iotService.getHiveAnalysis(hiveId, req.user, lang || 'English');
   }
 
   @Get('hives/:hiveId/history')

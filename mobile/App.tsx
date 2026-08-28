@@ -428,7 +428,7 @@ export default function App() {
     setIsAnalyzing(true);
     setAiAnalysis(null);
     try {
-      const r = await fetch(`${API}/iot/hives/${id}/analysis`, { headers: getAuthHeaders(token!) });
+      const r = await fetch(`${API}/iot/hives/${id}/analysis?lang=${encodeURIComponent(language)}`, { headers: getAuthHeaders(token!) });
       const d = await r.json();
       setAiAnalysis(d);
     } catch (e) {
