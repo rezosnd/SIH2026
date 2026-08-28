@@ -494,11 +494,11 @@ export default function App() {
         <Text style={styles.sectionTitle}>SENSOR HEALTH</Text>
         <View style={{backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: '#eee'}}>
           {[
-            { name: 'DHT11', status: hiveDetails.current?.temperature ? 'ONLINE' : 'OFFLINE' },
-            { name: 'BMP180', status: hiveDetails.current?.pressure ? 'ONLINE' : 'OFFLINE' },
-            { name: 'Rain Sensor', status: hiveDetails.current?.rain !== undefined ? 'ONLINE' : 'OFFLINE' },
-            { name: 'GUVA-S12SD', status: hiveDetails.current?.uv ? 'ONLINE' : 'OFFLINE' },
-            { name: 'Load Cell', status: hiveDetails.current?.weight ? 'ONLINE' : 'NOT CONNECTED' },
+            { name: 'DHT11', status: hiveDetails.device?.status === 'OFFLINE' ? 'OFFLINE' : (hiveDetails.current?.temperature ? 'ONLINE' : 'OFFLINE') },
+            { name: 'BMP180', status: hiveDetails.device?.status === 'OFFLINE' ? 'OFFLINE' : (hiveDetails.current?.pressure ? 'ONLINE' : 'OFFLINE') },
+            { name: 'Rain Sensor', status: hiveDetails.device?.status === 'OFFLINE' ? 'OFFLINE' : (hiveDetails.current?.rain !== undefined ? 'ONLINE' : 'OFFLINE') },
+            { name: 'GUVA-S12SD', status: hiveDetails.device?.status === 'OFFLINE' ? 'OFFLINE' : (hiveDetails.current?.uv ? 'ONLINE' : 'OFFLINE') },
+            { name: 'Load Cell', status: hiveDetails.device?.status === 'OFFLINE' ? 'NOT CONNECTED' : (hiveDetails.current?.weight ? 'ONLINE' : 'NOT CONNECTED') },
           ].map(s => (
             <View key={s.name} style={{flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f3f4f6'}}>
               <Text style={{fontWeight: 'bold', color: '#4b5563'}}>{s.name}</Text>

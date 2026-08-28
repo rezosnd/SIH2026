@@ -401,11 +401,11 @@ export default function AdminDashboard() {
                   <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Sensor Health Status</h3>
                   <div className="space-y-4">
                     {[
-                      { name: 'DHT11', status: selectedHive.current?.temperature ? 'ONLINE' : 'OFFLINE' },
-                      { name: 'BMP180', status: selectedHive.current?.pressure ? 'ONLINE' : 'OFFLINE' },
-                      { name: 'Rain Drop', status: selectedHive.current?.rain !== undefined ? 'ONLINE' : 'OFFLINE' },
-                      { name: 'GUVA-S12SD', status: selectedHive.current?.uv ? 'ONLINE' : 'OFFLINE' },
-                      { name: 'Load Cell', status: selectedHive.current?.weight ? 'ONLINE' : 'NOT CONNECTED' },
+                      { name: 'DHT11', status: selectedHive.device?.status === 'OFFLINE' ? 'OFFLINE' : (selectedHive.current?.temperature ? 'ONLINE' : 'OFFLINE') },
+                      { name: 'BMP180', status: selectedHive.device?.status === 'OFFLINE' ? 'OFFLINE' : (selectedHive.current?.pressure ? 'ONLINE' : 'OFFLINE') },
+                      { name: 'Rain Drop', status: selectedHive.device?.status === 'OFFLINE' ? 'OFFLINE' : (selectedHive.current?.rain !== undefined ? 'ONLINE' : 'OFFLINE') },
+                      { name: 'GUVA-S12SD', status: selectedHive.device?.status === 'OFFLINE' ? 'OFFLINE' : (selectedHive.current?.uv ? 'ONLINE' : 'OFFLINE') },
+                      { name: 'Load Cell', status: selectedHive.device?.status === 'OFFLINE' ? 'NOT CONNECTED' : (selectedHive.current?.weight ? 'ONLINE' : 'NOT CONNECTED') },
                     ].map(s => (
                       <div key={s.name} className="flex justify-between items-center pb-3 border-b border-gray-50 last:border-0 last:pb-0">
                         <span className="font-semibold text-gray-700">{s.name}</span>
