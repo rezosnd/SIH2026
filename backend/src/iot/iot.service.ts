@@ -127,7 +127,7 @@ export class IoTService {
       beekeeper: hive.beekeeper.name,
       device: device ? {
         deviceId: device.deviceId,
-        status: device.status,
+        status: (device.lastSeenAt && (new Date().getTime() - device.lastSeenAt.getTime() < 120000)) ? 'ONLINE' : 'OFFLINE',
         lastSeenAt: device.lastSeenAt,
         firmwareVersion: device.firmwareVersion
       } : null,
