@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { BarChart3, Users, Hexagon, Package, ShieldAlert, Activity, AlertTriangle, ChevronRight, TrendingUp, XCircle, Plus } from 'lucide-react';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'https://backend-eight-jade-26.vercel.app';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://sih-2026-kiit.vercel.app';
 
 async function getToken() {
   const r = await fetch(`${API}/auth/dev-login?role=KVIC`);
