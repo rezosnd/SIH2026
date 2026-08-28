@@ -216,25 +216,42 @@ export default function KvicDashboard() {
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
-                    {['Location', 'Status', 'Beekeeper', 'Total Batches', 'Registered'].map(h => (
+                    {['Location', 'Status', 'IoT Connection', 'Temp / Hum', 'Beekeeper', 'Total Batches'].map(h => (
                       <th key={h} className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {(Array.isArray(data) ? data : []).length === 0 ? (
-                    <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-400 font-semibold">No hives registered.</td></tr>
-                  ) : (Array.isArray(data) ? data : []).map((h: any) => (
+                    <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-400 font-semibold">No hives registered.</td></tr>
+                  ) : (Array.isArray(data) ? data : []).map((h: any) => {
+                    const isOnline = h.device?.lastSeenAt && (new Date().getTime() - new Date(h.device.lastSeenAt).getTime() < 120000);
+                    const latest = h.sensorReadings?.[0];
+                    return (
                     <tr key={h.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-5 py-4 font-semibold">{h.location}</td>
                       <td className="px-5 py-4">
                         <span className={`text-xs font-bold px-2 py-0.5 rounded border ${h.status === 'ACTIVE' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-100 text-gray-600 border-gray-200'}`}>{h.status}</span>
                       </td>
+                      <td className="px-5 py-4">
+                        {h.device ? (
+                          <span className={`text-xs font-bold px-2 py-0.5 rounded border ${isOnline ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}`}>
+                            {isOnline ? 'ONLINE' : 'OFFLINE'}
+                          </span>
+                        ) : <span className="text-gray-400 text-xs font-bold">NO DEVICE</span>}
+                      </td>
+                      <td className="px-5 py-4">
+                        {latest ? (
+                          <div className="text-xs font-bold text-gray-600">
+                            {latest.temperature != null ? `${latest.temperature}°C` : 'N/A'} / {latest.humidity != null ? `${latest.humidity}%` : 'N/A'}
+                          </div>
+                        ) : <span className="text-gray-400 text-xs">No Data</span>}
+                      </td>
                       <td className="px-5 py-4 text-gray-600">{h.beekeeper?.name || '—'}</td>
                       <td className="px-5 py-4 font-bold">{h.batches?.length ?? 0}</td>
-                      <td className="px-5 py-4 text-gray-400 text-xs">{new Date(h.registrationDate).toLocaleDateString()}</td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

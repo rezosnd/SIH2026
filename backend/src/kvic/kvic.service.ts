@@ -32,7 +32,15 @@ export class KvicService {
 
   async getHives() {
     return this.prisma.hive.findMany({
-      include: { beekeeper: { include: { user: true } }, batches: true },
+      include: { 
+        beekeeper: { include: { user: true } }, 
+        batches: true,
+        device: true,
+        sensorReadings: {
+          orderBy: { timestamp: 'desc' },
+          take: 1
+        }
+      },
     });
   }
 
