@@ -40,7 +40,7 @@ describe('QrService', () => {
         { city: 'Delhi', timestamp: twoHoursAgo }
       ]
     });
-    prismaMock.qRScan.create.mockImplementation((args) => Promise.resolve(args.data));
+    prismaMock.qRScan.create.mockImplementation((args: any) => Promise.resolve(args.data));
 
     const res = await service.recordScan('fake_qr', { city: 'Mumbai' });
     

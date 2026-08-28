@@ -31,17 +31,25 @@ export class KvicService {
   }
 
   async getHives() {
-    return this.prisma.hive.findMany({
+    const hives = await this.prisma.hive.findMany({
       include: { 
         beekeeper: { include: { user: true } }, 
         batches: true,
-        device: true,
-        sensorReadings: {
-          orderBy: { timestamp: 'desc' },
-          take: 1
+        device: {
+          include: {
+            readings: {
+              orderBy: { timestamp: 'desc' },
+              take: 1
+            }
+          }
         }
       },
     });
+    // Map to the format expected by the frontend
+    return hives.map(h => ({
+      ...h,
+      sensorReadings: h.device?.readings || []
+    }));
   }
 
   async getBatches() {

@@ -137,7 +137,7 @@ export class IoTService {
         humidity: latestReading.humidity,
         pressure: latestReading.pressure,
         weight: latestReading.weight,
-        rain: latestReading.rain,
+        rain: latestReading.rain ?? false,
         uv: latestReading.uv,
         lm393: latestReading.lm393Value,
         timestamp: latestReading.timestamp
@@ -195,7 +195,7 @@ export class IoTService {
         where: { deviceId: device.deviceId },
         orderBy: { timestamp: 'desc' }
       });
-      isOnline = device.lastSeenAt && (new Date().getTime() - device.lastSeenAt.getTime() < 120000);
+      isOnline = device.lastSeenAt ? (new Date().getTime() - device.lastSeenAt.getTime() < 120000) : false;
       if (latest) {
         // Data is stale if older than 15 minutes
         isStale = (new Date().getTime() - latest.timestamp.getTime()) > 15 * 60 * 1000;
@@ -236,13 +236,17 @@ export class IoTService {
     let ruleScore = 0;
     let envStatus = 'INSUFFICIENT DATA';
 
-    if (validSensors >= 3) {
+    if (latest && validSensors >= 3) {
       let tempScore = 100;
-      if (latest.temperature > 35 || latest.temperature < 10) tempScore = 40;
-      else if (latest.temperature > 32 || latest.temperature < 15) tempScore = 70;
+      if (latest.temperature != null) {
+        if (latest.temperature > 35 || latest.temperature < 10) tempScore = 40;
+        else if (latest.temperature > 32 || latest.temperature < 15) tempScore = 70;
+      }
 
       let humScore = 100;
-      if (latest.humidity > 80 || latest.humidity < 30) humScore = 50;
+      if (latest.humidity != null) {
+        if (latest.humidity > 80 || latest.humidity < 30) humScore = 50;
+      }
 
       ruleScore = Math.round((tempScore * 0.6) + (humScore * 0.4));
       
@@ -257,7 +261,7 @@ export class IoTService {
     let aiResult = null;
 
     // 3. GROQ AI ANALYSIS
-    if (validSensors >= 3 && process.env.GROQ_API_KEY) {
+    if (latest && validSensors >= 3 && process.env.GROQ_API_KEY) {
       const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
       const promptContext = {
         hiveId: hive.id,
