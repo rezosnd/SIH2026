@@ -39,12 +39,30 @@ export class AdminService {
       take: 5
     });
 
+    const totalHives = await this.prisma.hive.count();
+    
+    const twoMinsAgo = new Date(new Date().getTime() - 120000);
+    const activeDevices = await this.prisma.ioTDevice.count({
+      where: {
+        lastSeenAt: {
+          gte: twoMinsAgo
+        }
+      }
+    });
+
+    const openHiveAlerts = await this.prisma.hiveAlert.count({
+      where: { status: 'OPEN' }
+    });
+
     return {
       totalHoneyKg: totalHoneyAgg._sum.quantity || 0,
       activeBatches: activeBatchesCount,
       verifiedScans: verifiedScansCount,
       suspiciousQrs: suspiciousQrCount,
-      recentAlerts
+      recentAlerts,
+      totalHives,
+      activeDevices,
+      openHiveAlerts
     };
   }
 }

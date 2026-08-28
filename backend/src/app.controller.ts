@@ -23,4 +23,24 @@ export class AppController {
       take: 20,
     });
   }
+
+  @Get('hives')
+  @UseGuards(JwtAuthGuard)
+  async getAllHives() {
+    const hives = await this.prisma.hive.findMany({
+      include: {
+        device: true
+      }
+    });
+    
+    return hives.map(h => {
+      const isOnline = h.device?.lastSeenAt && (new Date().getTime() - h.device.lastSeenAt.getTime() < 120000);
+      return {
+        id: h.id,
+        location: h.location,
+        status: isOnline ? 'ONLINE' : 'OFFLINE',
+        device: h.device
+      };
+    });
+  }
 }

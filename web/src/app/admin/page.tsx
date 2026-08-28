@@ -189,8 +189,13 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
                 <MetricCard label="Total QR Codes" value={secMetrics?.totalQr} />
                 <MetricCard label="Revoked QRs" value={secMetrics?.revokedQr} color="text-orange-700" accent="bg-orange-400" />
+                <MetricCard label="Total Hives" value={stats?.totalHives} />
+                <MetricCard label="Active IoT Devices" value={stats?.activeDevices} color="text-green-700" />
+              </div>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
                 <MetricCard label="Open Alerts" value={secMetrics?.open} color="text-red-700" accent="bg-red-500" />
                 <MetricCard label="Resolved Alerts" value={secMetrics?.resolved} color="text-green-700" />
+                <MetricCard label="Hive Alerts" value={stats?.openHiveAlerts} color="text-red-700" />
               </div>
             </div>
           )}
@@ -337,7 +342,7 @@ export default function AdminDashboard() {
                         iotHives.map(h => (
                           <tr key={h.id} className="hover:bg-gray-50 transition-colors">
                             <td className="px-4 py-3 font-medium">{h.location}</td>
-                            <td className="px-4 py-3"><StatusBadge status={h.status} /></td>
+                            <td className="px-4 py-3">{statusBadge(h.status)}</td>
                             <td className="px-4 py-3">
                               <button onClick={() => fetchHiveDetails(h.id)} className="px-3 py-1 bg-black text-white rounded text-xs font-bold hover:bg-gray-800 transition-colors">
                                 VIEW DETAILS
