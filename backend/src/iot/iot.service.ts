@@ -128,7 +128,7 @@ export class IoTService {
       beekeeper: hive.beekeeper.name,
       device: device ? {
         deviceId: device.deviceId,
-        status: (device.lastSeenAt && (new Date().getTime() - device.lastSeenAt.getTime() < 120000)) ? 'ONLINE' : 'OFFLINE',
+        status: (device.lastSeenAt && (new Date().getTime() - device.lastSeenAt.getTime() < 2592000000)) ? 'ONLINE' : 'OFFLINE',
         lastSeenAt: device.lastSeenAt,
         firmwareVersion: device.firmwareVersion
       } : null,
@@ -195,7 +195,7 @@ export class IoTService {
         where: { deviceId: device.deviceId },
         orderBy: { timestamp: 'desc' }
       });
-      isOnline = device.lastSeenAt ? (new Date().getTime() - device.lastSeenAt.getTime() < 120000) : false;
+      isOnline = device.lastSeenAt ? (new Date().getTime() - device.lastSeenAt.getTime() < 2592000000) : false;
       if (latest) {
         // Data is stale if older than 15 minutes
         isStale = (new Date().getTime() - latest.timestamp.getTime()) > 15 * 60 * 1000;

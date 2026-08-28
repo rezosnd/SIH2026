@@ -34,7 +34,7 @@ export class AppController {
     });
     
     return hives.map(h => {
-      const isOnline = h.device?.lastSeenAt && (new Date().getTime() - h.device.lastSeenAt.getTime() < 120000);
+      const isOnline = h.device?.lastSeenAt && (new Date().getTime() - h.device.lastSeenAt.getTime() < 2592000000);
       return {
         id: h.id,
         location: h.location,
