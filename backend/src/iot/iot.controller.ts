@@ -26,6 +26,12 @@ export class IoTController {
     return this.iotService.getHiveDetails(hiveId, req.user);
   }
 
+  @Get('hives/:hiveId/analysis')
+  @UseGuards(JwtAuthGuard)
+  async getHiveAnalysis(@Param('hiveId') hiveId: string, @Req() req: any) {
+    return this.iotService.getHiveAnalysis(hiveId, req.user);
+  }
+
   @Get('hives/:hiveId/history')
   @UseGuards(JwtAuthGuard)
   async getHiveHistory(

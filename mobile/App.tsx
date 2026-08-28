@@ -410,16 +410,33 @@ export default function App() {
   );
 
   const [hiveDetails, setHiveDetails] = useState<any>(null);
+  const [aiAnalysis, setAiAnalysis] = useState<any>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   useEffect(() => {
     if (activeTab === 'HiveDetails' && selectedHiveId) {
       setHiveDetails(null);
+      setAiAnalysis(null);
       fetch(`${API}/iot/hives/${selectedHiveId}`, { headers: getAuthHeaders(token!) })
         .then(r => r.json())
         .then(d => setHiveDetails(d))
         .catch(e => console.error(e));
     }
   }, [activeTab, selectedHiveId, token]);
+
+  const fetchAiAnalysis = async (id: string) => {
+    setIsAnalyzing(true);
+    setAiAnalysis(null);
+    try {
+      const r = await fetch(`${API}/iot/hives/${id}/analysis`, { headers: getAuthHeaders(token!) });
+      const d = await r.json();
+      setAiAnalysis(d);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   const HiveDetailsContent = () => {
     if (!hiveDetails) return <View style={styles.contentArea}><ActivityIndicator size="large" color="#111" style={{marginTop: 50}} /></View>;
@@ -494,18 +511,62 @@ export default function App() {
         <Text style={styles.sectionTitle}>SENSOR HEALTH</Text>
         <View style={{backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: '#eee'}}>
           {[
-            { name: 'DHT11', status: hiveDetails.device?.status === 'OFFLINE' ? 'OFFLINE' : (hiveDetails.current?.temperature ? 'ONLINE' : 'OFFLINE') },
-            { name: 'BMP180', status: hiveDetails.device?.status === 'OFFLINE' ? 'OFFLINE' : (hiveDetails.current?.pressure ? 'ONLINE' : 'OFFLINE') },
-            { name: 'Rain Sensor', status: hiveDetails.device?.status === 'OFFLINE' ? 'OFFLINE' : (hiveDetails.current?.rain !== undefined ? 'ONLINE' : 'OFFLINE') },
-            { name: 'GUVA-S12SD', status: hiveDetails.device?.status === 'OFFLINE' ? 'OFFLINE' : (hiveDetails.current?.uv ? 'ONLINE' : 'OFFLINE') },
-            { name: 'Load Cell', status: hiveDetails.device?.status === 'OFFLINE' ? 'NOT CONNECTED' : (hiveDetails.current?.weight ? 'ONLINE' : 'NOT CONNECTED') },
+            { name: 'DHT11', status: hiveDetails.device?.status === 'OFFLINE' ? 'OFFLINE' : (hiveDetails.current?.temperature != null ? 'ONLINE' : 'ERROR') },
+            { name: 'BMP180', status: hiveDetails.device?.status === 'OFFLINE' ? 'OFFLINE' : (hiveDetails.current?.pressure != null ? 'ONLINE' : 'ERROR') },
+            { name: 'Rain Sensor', status: hiveDetails.device?.status === 'OFFLINE' ? 'OFFLINE' : (hiveDetails.current?.rain !== undefined ? 'ONLINE' : 'ERROR') },
+            { name: 'GUVA-S12SD', status: hiveDetails.device?.status === 'OFFLINE' ? 'OFFLINE' : (hiveDetails.current?.uv != null ? 'ONLINE' : 'ERROR') },
+            { name: 'Load Cell', status: hiveDetails.device?.status === 'OFFLINE' ? 'NOT CONNECTED' : (hiveDetails.current?.weight != null ? 'ONLINE' : 'NOT CONNECTED') },
           ].map(s => (
             <View key={s.name} style={{flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f3f4f6'}}>
               <Text style={{fontWeight: 'bold', color: '#4b5563'}}>{s.name}</Text>
-              <Text style={{fontWeight: '900', color: s.status === 'ONLINE' ? '#10B981' : (s.status === 'NOT CONNECTED' ? '#EF4444' : '#9ca3af')}}>{s.status}</Text>
+              <Text style={{fontWeight: '900', color: s.status === 'ONLINE' ? '#10B981' : s.status === 'NOT CONNECTED' ? '#F97316' : s.status === 'ERROR' ? '#EF4444' : '#9ca3af'}}>{s.status}</Text>
             </View>
           ))}
         </View>
+
+        <TouchableOpacity 
+          onPress={() => fetchAiAnalysis(hiveDetails.id)} 
+          disabled={isAnalyzing}
+          style={[styles.primaryButton, {marginBottom: 20, backgroundColor: isAnalyzing ? '#9ca3af' : '#111'}]}
+        >
+          <Text style={styles.primaryButtonText}>{isAnalyzing ? 'Analyzing...' : 'Run AI Environment Analysis'}</Text>
+        </TouchableOpacity>
+
+        {aiAnalysis && (
+          <View style={{backgroundColor: '#111', borderRadius: 12, padding: 16, marginBottom: 20}}>
+            <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12}}>
+              <Text style={{color: '#fff', fontWeight: '900', fontSize: 16}}>GROQ AI ASSESSMENT</Text>
+              {aiAnalysis.aiAssessment?.environmentStatus && (
+                <View style={{backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4}}>
+                  <Text style={{color: '#fff', fontWeight: '900', fontSize: 10}}>{aiAnalysis.aiAssessment.environmentStatus.toUpperCase()} ({aiAnalysis.aiAssessment.confidence}%)</Text>
+                </View>
+              )}
+            </View>
+            
+            {aiAnalysis.aiAssessment?.error ? (
+              <Text style={{color: '#EF4444', fontWeight: 'bold'}}>{aiAnalysis.aiAssessment.error}</Text>
+            ) : aiAnalysis.aiAssessment?.summary ? (
+              <View>
+                <Text style={{color: '#ddd', fontSize: 13, marginBottom: 16}}>{aiAnalysis.aiAssessment.summary}</Text>
+                
+                <Text style={{color: '#9ca3af', fontWeight: 'bold', fontSize: 10, marginBottom: 4}}>ISSUES</Text>
+                {aiAnalysis.aiAssessment.alerts?.map((a: string, i: number) => <Text key={'a'+i} style={{color: '#FCA5A5', fontSize: 12, marginBottom: 2}}>• {a}</Text>)}
+                {aiAnalysis.aiAssessment.sensorIssues?.map((a: string, i: number) => <Text key={'s'+i} style={{color: '#FDBA74', fontSize: 12, marginBottom: 2}}>• {a}</Text>)}
+                {(!aiAnalysis.aiAssessment.alerts?.length && !aiAnalysis.aiAssessment.sensorIssues?.length) && <Text style={{color: '#6b7280', fontSize: 12, marginBottom: 8}}>None</Text>}
+                
+                <Text style={{color: '#9ca3af', fontWeight: 'bold', fontSize: 10, marginTop: 8, marginBottom: 4}}>RECOMMENDATIONS</Text>
+                {aiAnalysis.aiAssessment.recommendations?.map((r: string, i: number) => <Text key={'r'+i} style={{color: '#86EFAC', fontSize: 12, marginBottom: 2}}>• {r}</Text>)}
+                
+                <View style={{marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: '#333'}}>
+                  <Text style={{color: '#9ca3af', fontWeight: 'bold', fontSize: 10, marginBottom: 4}}>REASONING</Text>
+                  <Text style={{color: '#9ca3af', fontSize: 12, fontStyle: 'italic'}}>{aiAnalysis.aiAssessment.reasoning}</Text>
+                </View>
+              </View>
+            ) : (
+              <Text style={{color: '#9ca3af', fontStyle: 'italic'}}>No valid AI response.</Text>
+            )}
+          </View>
+        )}
 
         <Text style={styles.sectionTitle}>ALERTS</Text>
         {(!hiveDetails.alerts || hiveDetails.alerts.length === 0) ? (
